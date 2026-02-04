@@ -48,7 +48,7 @@
       border-radius: 12px;
       box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
-      min-height: 140px; /* 카드 높이 고정 */
+      min-height: 140px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -123,7 +123,7 @@
 
   <div class="flex flex-1 overflow-hidden">
 
-    <!-- 좌측 사이드바 (아이콘 제거) -->
+    <!-- 좌측 사이드바 (아이콘 완전 제거) -->
     <aside class="sidebar w-64 flex-shrink-0 hidden md:block overflow-y-auto">
       <nav class="py-6 px-4 space-y-1">
         <a href="#" class="flex items-center px-4 py-3 rounded-lg bg-blue-600/20 text-blue-400">
@@ -261,22 +261,24 @@
     }
   </script>
 
-  <!-- 실제 가격 데이터 연동 스크립트 (개선 버전) -->
+  <!-- 실제 가격 데이터 연동 스크립트 -->
   <script>
-    const apiKey = 'd61e1n9r01quqpfv0s0'; // 네 키
+    const apiKey = 'd61e1n9r01quq5pfv0qgd61e1n9r01quq5pfv0r0'; // ← 여기 본인 키 넣기!
 
+    // 종목 티커 매핑 (Finnhub 정확한 형식)
     const assets = {
       USDKRW: 'USDKRW',
-      GLD: 'GLD',
-      SLV: 'SLV',
+      GLD: 'AMEX:GLD',
+      SLV: 'AMEX:SLV',
       SPX: 'SPX',
-      QQQ: 'QQQ',
+      QQQ: 'NASDAQ:QQQ',
       KOSPI: 'KS11',
       KOSDAQ: 'KQ11',
       BTC: 'BINANCE:BTCUSDT',
       ETH: 'BINANCE:ETHUSDT'
     };
 
+    // 가격 불러오기 함수
     async function fetchPrice(symbol, delay = 0) {
       if (delay > 0) await new Promise(r => setTimeout(r, delay));
       try {
@@ -295,6 +297,7 @@
       }
     }
 
+    // 가격 업데이트 (순차 호출 + 2초 간격)
     async function updatePrices() {
       document.getElementById('update-time').textContent = '업데이트 중...';
 
@@ -302,21 +305,21 @@
       for (let i = 0; i < keys.length; i++) {
         const key = keys[i];
         const symbol = assets[key];
-        const data = await fetchPrice(symbol, i * 1500); // 1.5초 간격 → 분당 40회 이하로 안전
+        const data = await fetchPrice(symbol, i * 2000); // 2초 간격
 
         const priceEl = document.getElementById(`${key.toLowerCase()}-price`);
         const changeEl = document.getElementById(`${key.toLowerCase()}-change`);
 
-        if (priceEl) priceEl.textContent = data.price;
-        if (changeEl) changeEl.innerHTML = data.change;
+        if (priceEl) priceEl.textContent = data.price || 'N/A';
+        if (changeEl) changeEl.innerHTML = data.change || '-';
       }
 
       document.getElementById('update-time').textContent = `최종 업데이트: ${new Date().toLocaleTimeString('ko-KR')}`;
     }
 
-    // 페이지 열릴 때 바로 실행 + 90초마다 갱신 (분당 0.67회 → 완전 안전)
+    // 페이지 열릴 때 바로 실행 + 120초(2분)마다 갱신
     updatePrices();
-    setInterval(updatePrices, 90000);
+    setInterval(updatePrices, 120000);
   </script>
 
 </body>
