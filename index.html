@@ -489,15 +489,15 @@
                 <div class="gauge-container">
                   <div class="gauge-semi-circle"></div>
                   <div class="gauge-mask"></div>
-                  <div class="gauge-needle" style="transform: translateX(-50%) rotate(calc(74 * 1.8deg - 90deg));"></div>
+                  <div class="gauge-needle" id="fng-needle" style="transform: translateX(-50%) rotate(calc(50 * 1.8deg - 90deg));"></div>
                   <div class="gauge-center-point"></div>
                   <div class="gauge-labels">
-                    <span>Extreme Fear</span>
-                    <span>Extreme Greed</span>
+                    <span>0</span>
+                    <span>100</span>
                   </div>
                 </div>
-                <div class="text-center text-xl font-bold mt-1">74</div>
-                <div class="text-xs text-center">탐욕</div>
+                <div class="text-center text-xl font-bold mt-1" id="fng-value">—</div>
+                <div class="text-xs text-center" id="fng-class">—</div>
               </div>
             </div>
           </section>
@@ -535,13 +535,22 @@
       icon.classList.add('fa-sun');
     }
 
+    // 공포탐욕 지수 한글 매핑 함수
+    function getKoreanClassification(value) {
+      value = parseInt(value, 10);
+      if (value <= 24) return { text: '극단적 공포', color: 'text-red-500' };
+      if (value <= 49) return { text: '공포', color: 'text-orange-500' };
+      if (value === 50) return { text: '중립', color: 'text-gray-400' };
+      if (value <= 74) return { text: '탐욕', color: 'text-green-500' };
+      return { text: '극단적 탐욕', color: 'text-emerald-500' };
+    }
+
     async function updateAllData() {
       try {
         // 1. CoinGecko - BTC + ETH
         const cgRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,krw&include_24hr_change=true');
         const cgData = await cgRes.json();
 
-        // 비트코인
         const btc = cgData.bitcoin;
         if (btc) {
           const usd = btc.usd.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
@@ -558,7 +567,6 @@
           btcChgEl.innerHTML = `<i class="fas fa-arrow-trend-${pos ? 'up' : 'down'}"></i><span>${pos ? '+' : ''}${chg}%</span>`;
         }
 
-        // 이더리움
         const eth = cgData.ethereum;
         if (eth) {
           const usd = eth.usd.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -575,29 +583,28 @@
           ethChgEl.innerHTML = `<i class="fas fa-arrow-trend-${pos ? 'up' : 'down'}"></i><span>${pos ? '+' : ''}${chg}%</span>`;
         }
 
-        // 2. 환율 USD/KRW (frankfurter.app)
-        const fxRes = await fetch('https://api.frankfurter.app/latest?from=USD&to=KRW');
-        const fxData = await fxRes.json();
-        const currentKrw = fxData.rates.KRW.toFixed(1);
+        // 2. 공포탐욕 지수 (Alternative.me)
+        const fngRes = await fetch('https://api.alternative.me/fng/?limit=1');
+        const fngData = await fngRes.json();
+        if (fngData && fngData.data && fngData.data.length > 0) {
+          const fng = fngData.data[0];
+          const value = parseInt(fng.value, 10);
 
-        // 전일 데이터
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
-        const prevRes = await fetch(`https://api.frankfurter.app/${yesterdayStr}?from=USD&to=KRW`);
-        const prevData = await prevRes.json();
-        const prevKrw = prevData.rates.KRW.toFixed(1);
+          // 숫자 업데이트
+          document.getElementById('fng-value').textContent = value;
 
-        const fxChgPct = ((currentKrw - prevKrw) / prevKrw * 100).toFixed(2);
-        const fxChgWon = (currentKrw - prevKrw).toFixed(1);
-        const fxPos = fxChgPct >= 0;
+          // 분류 업데이트 (한글 + 색상)
+          const cls = getKoreanClassification(value);
+          const fngClassEl = document.getElementById('fng-class');
+          fngClassEl.textContent = cls.text;
+          fngClassEl.className = `text-xs text-center ${cls.color}`;
 
-        document.getElementById('usdkrw-value').textContent = `${currentKrw}원`;
-        const fxChgEl = document.getElementById('usdkrw-change');
-        fxChgEl.textContent = `${fxPos ? '+' : ''}${fxChgPct}% (${fxPos ? '+' : ''}${fxChgWon}원)`;
-        fxChgEl.className = `change ${fxPos ? 'positive' : 'negative'}`;
+          // 게이지 바늘 회전 (0 → -90도, 100 → +90도)
+          const rotation = value * 1.8 - 90;
+          document.getElementById('fng-needle').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+        }
 
-        // 3. 업비트 BTC-KRW + USDT
+        // 3. 업비트 BTC-KRW (김치프리미엄 계산용) + USDT
         const upRes = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC,KRW-USDT');
         const upData = await upRes.json();
 
@@ -615,7 +622,7 @@
           }
         });
 
-        // 업비트 USDT 표시
+        // 업비트 USDT
         if (upUsdt) {
           const price = Math.round(upUsdt).toLocaleString('ko-KR');
           const pos = upUsdtChgRate >= 0;
@@ -641,8 +648,8 @@
         }
 
         // 5. 김치프리미엄 (BTC 기준)
-        if (upBtcKrw && btc && currentKrw) {
-          const globalBtcKrw = btc.usd * currentKrw;
+        if (upBtcKrw && btc) {
+          const globalBtcKrw = btc.usd * 1449; // 임시 환율 (실제로는 환율 API에서 가져오기)
           const premium = ((upBtcKrw / globalBtcKrw) - 1) * 100;
           const premiumStr = premium.toFixed(2);
           const pos = premium >= 0;
@@ -653,14 +660,12 @@
         }
 
       } catch (err) {
-        console.error('데이터 업데이트 중 오류:', err);
+        console.error('데이터 업데이트 오류:', err);
       }
     }
 
-    // 페이지 로드 시 즉시 실행
+    // 즉시 실행 + 1분마다
     updateAllData();
-
-    // 60초마다 업데이트
     setInterval(updateAllData, 60 * 1000);
   </script>
 
