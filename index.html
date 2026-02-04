@@ -140,7 +140,7 @@
       color: var(--text-secondary);
     }
 
-    /* ─────────────── 레이아웃 흔들림 방지 추가 스타일 ─────────────── */
+    /* 레이아웃 흔들림 방지 + 헤더 개선 */
     .card {
       min-height: 140px;
       display: flex;
@@ -184,22 +184,58 @@
       max-width: 100%;
     }
 
-    @media (min-width: 1024px) {
-      .card .text-2xl {
-        font-size: 1.875rem;
+    /* 헤더 레이아웃 개선 핵심 */
+    header .flex.items-center.justify-between {
+      height: auto;
+      min-height: 5rem;          /* h-24 대신 유연하게 */
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;             /* space-x-4 → gap */
+      flex-wrap: nowrap;         /* 강제로 한 줄 유지 시도 */
+    }
+
+    .header-right .card {
+      padding: 0.5rem 0.75rem;  /* p-3보다 작게 */
+      min-width: 110px;
+      font-size: 0.875rem;
+    }
+
+    .header-right .card .text-lg {
+      font-size: 1.125rem;       /* 너무 크지 않게 */
+    }
+
+    .header-right .card .text-xs {
+      font-size: 0.65rem;
+      line-height: 1;
+    }
+
+    @media (max-width: 1024px) {
+      .header-right {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 0.5rem;
       }
-      .card .text-xl {
-        font-size: 1.5rem;
+      .header-right .card {
+        min-width: 90px;
       }
     }
-    /* ─────────────────────────────────────────────────────────────── */
+
+    @media (min-width: 1024px) {
+      .card .text-2xl { font-size: 1.875rem; }
+      .card .text-xl { font-size: 1.5rem; }
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
   <!-- 상단 헤더 -->
   <header class="bg-gray-900/80 backdrop-blur-md border-b border-gray-800 sticky top-0 z-50 px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between h-24 max-w-7xl mx-auto">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between max-w-7xl mx-auto py-4 gap-4 sm:gap-0">
       <!-- Left Side: Title and Subtitle -->
       <div>
         <h1 class="text-3xl font-bold" style="color: var(--text-primary);">Money Flow 자산 흐름</h1>
@@ -210,7 +246,7 @@
       </div>
 
       <!-- Right Side: Indicators & Theme Toggle -->
-      <div class="flex items-center space-x-4">
+      <div class="header-right">
         <div class="card p-3 rounded-lg text-center hidden md:block" style="background-color: var(--card-bg);">
           <div class="text-xs" style="color: var(--text-secondary);">$ 원/달러 환율</div>
           <div class="text-lg font-bold" style="color: var(--text-primary);">1449.4원</div>
@@ -266,7 +302,6 @@
           <section class="card p-6 space-y-4 flex flex-col">
             <h2 class="section-title">원자재</h2>
             <div class="flex-grow space-y-4 flex flex-col">
-              <!-- 금 -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
                 <div class="text-lg font-semibold">금 (GLD)</div>
                 <div class="mt-2">
@@ -277,7 +312,6 @@
                   </div>
                 </div>
               </div>
-              <!-- 은 -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
                 <div class="text-lg font-semibold">은 (SLV)</div>
                 <div class="mt-2">
@@ -288,7 +322,6 @@
                   </div>
                 </div>
               </div>
-              <!-- 금 공포탐욕 지수 -->
               <div class="card p-4">
                 <h3 class="text-lg font-semibold text-center mb-2">공포 탐욕 지수</h3>
                 <div class="gauge-container">
@@ -313,7 +346,6 @@
           <section class="card p-6 space-y-4 flex flex-col">
             <h2 class="section-title">미국 주식</h2>
             <div class="flex-grow space-y-4 flex flex-col">
-              <!-- S&P500 -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
                 <div class="text-lg font-semibold">S&P 500</div>
                 <div class="mt-2">
@@ -324,7 +356,6 @@
                   </div>
                 </div>
               </div>
-              <!-- QQQ -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
                 <div class="text-lg font-semibold">NASDAQ 100</div>
                 <div class="mt-2">
@@ -335,7 +366,6 @@
                   </div>
                 </div>
               </div>
-              <!-- 미국 주식 공포탐욕 지수 -->
               <div class="card p-4">
                 <h3 class="text-lg font-semibold text-center mb-2">공포 탐욕 지수</h3>
                 <div class="gauge-container">
@@ -360,7 +390,6 @@
           <section class="card p-6 space-y-4 flex flex-col">
             <h2 class="section-title">한국 주식</h2>
             <div class="flex-grow space-y-4 flex flex-col">
-              <!-- 코스피 -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
                 <div class="text-lg font-semibold">코스피</div>
                 <div class="mt-2">
@@ -371,7 +400,6 @@
                   </div>
                 </div>
               </div>
-              <!-- 코스닥 -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
                 <div class="text-lg font-semibold">코스닥</div>
                 <div class="mt-2">
@@ -382,7 +410,6 @@
                   </div>
                 </div>
               </div>
-              <!-- 한국 주식 공포탐욕 지수 -->
               <div class="card p-4">
                 <h3 class="text-lg font-semibold text-center mb-2">공포 탐욕 지수</h3>
                 <div class="gauge-container">
@@ -407,7 +434,6 @@
           <section class="card p-6 space-y-4 flex flex-col">
             <h2 class="section-title">크립토</h2>
             <div class="flex-grow space-y-4 flex flex-col">
-              <!-- 비트코인 -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
                 <div class="text-lg font-semibold">비트코인</div>
                 <div class="mt-2">
@@ -421,7 +447,6 @@
                   </div>
                 </div>
               </div>
-              <!-- 이더리움 -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
                 <div class="text-lg font-semibold">이더리움</div>
                 <div class="mt-2">
@@ -435,7 +460,6 @@
                   </div>
                 </div>
               </div>
-              <!-- 공포탐욕 지수 -->
               <div class="card p-4">
                 <h3 class="text-lg font-semibold text-center mb-2">공포 탐욕 지수</h3>
                 <div class="gauge-container">
@@ -484,7 +508,6 @@
       }
     });
 
-    // 초기 상태 아이콘 설정
     if (html.getAttribute('data-theme') === 'light') {
       icon.classList.remove('fa-moon');
       icon.classList.add('fa-sun');
