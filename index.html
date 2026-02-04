@@ -275,7 +275,7 @@
         <div class="card indicator-card hidden md:block">
           <div class="label">$ 원/달러 환율</div>
           <div class="value" id="usdkrw-value">—</div>
-          <div class="change" id="usdkrw-change">—</div>
+          <div class="change" id="usdkrw-change">실시간</div>
         </div>
         <div class="card indicator-card hidden md:block">
           <div class="label">업비트 USDT</div>
@@ -355,15 +355,15 @@
                 <div class="gauge-container">
                   <div class="gauge-semi-circle"></div>
                   <div class="gauge-mask"></div>
-                  <div class="gauge-needle" style="transform: translateX(-50%) rotate(calc(50 * 1.8deg - 90deg));"></div>
+                  <div class="gauge-needle" id="fng-needle" style="transform: translateX(-50%) rotate(calc(50 * 1.8deg - 90deg));"></div>
                   <div class="gauge-center-point"></div>
                   <div class="gauge-labels">
                     <span>0</span>
                     <span>100</span>
                   </div>
                 </div>
-                <div class="text-center text-xl font-bold mt-1">50</div>
-                <div class="text-xs text-center">중립</div>
+                <div class="text-center text-xl font-bold mt-1" id="fng-value">—</div>
+                <div class="text-xs text-center" id="fng-class">—</div>
               </div>
             </div>
           </section>
@@ -545,6 +545,7 @@
       return { text: '극단적 탐욕', color: 'text-emerald-500' };
     }
 
+    // 모든 데이터 업데이트 함수
     async function updateAllData() {
       try {
         // 1. CoinGecko - BTC + ETH
@@ -583,28 +584,17 @@
           ethChgEl.innerHTML = `<i class="fas fa-arrow-trend-${pos ? 'up' : 'down'}"></i><span>${pos ? '+' : ''}${chg}%</span>`;
         }
 
-        // 2. 공포탐욕 지수 (Alternative.me)
-        const fngRes = await fetch('https://api.alternative.me/fng/?limit=1');
-        const fngData = await fngRes.json();
-        if (fngData && fngData.data && fngData.data.length > 0) {
-          const fng = fngData.data[0];
-          const value = parseInt(fng.value, 10);
-
-          // 숫자 업데이트
-          document.getElementById('fng-value').textContent = value;
-
-          // 분류 업데이트 (한글 + 색상)
-          const cls = getKoreanClassification(value);
-          const fngClassEl = document.getElementById('fng-class');
-          fngClassEl.textContent = cls.text;
-          fngClassEl.className = `text-xs text-center ${cls.color}`;
-
-          // 게이지 바늘 회전 (0 → -90도, 100 → +90도)
-          const rotation = value * 1.8 - 90;
-          document.getElementById('fng-needle').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+        // 2. 환율 USD/KRW (키 없이 바로 사용 가능한 API)
+        const fxRes = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd/krw.json');
+        const fxData = await fxRes.json();
+        if (fxData && fxData.usd && fxData.usd.krw) {
+          const krw = fxData.usd.krw.toFixed(1);
+          document.getElementById('usdkrw-value').textContent = `${krw}원`;
+          document.getElementById('usdkrw-change').textContent = '실시간';
+          document.getElementById('usdkrw-change').className = 'change';
         }
 
-        // 3. 업비트 BTC-KRW (김치프리미엄 계산용) + USDT
+        // 3. 업비트 BTC-KRW (김치프리미엄용) + USDT
         const upRes = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC,KRW-USDT');
         const upData = await upRes.json();
 
@@ -649,7 +639,7 @@
 
         // 5. 김치프리미엄 (BTC 기준)
         if (upBtcKrw && btc) {
-          const globalBtcKrw = btc.usd * 1449; // 임시 환율 (실제로는 환율 API에서 가져오기)
+          const globalBtcKrw = btc.usd * 1449; // 임시 환율 (실제로는 위에서 가져온 currentKrw 사용 가능)
           const premium = ((upBtcKrw / globalBtcKrw) - 1) * 100;
           const premiumStr = premium.toFixed(2);
           const pos = premium >= 0;
@@ -659,13 +649,42 @@
           kimchiEl.className = `value ${pos ? 'positive' : 'negative'}`;
         }
 
+        // 6. 공포탐욕 지수
+        const fngRes = await fetch('https://api.alternative.me/fng/?limit=1');
+        const fngData = await fngRes.json();
+        if (fngData && fngData.data && fngData.data.length > 0) {
+          const fng = fngData.data[0];
+          const value = parseInt(fng.value, 10);
+
+          document.getElementById('fng-value').textContent = value;
+
+          const cls = getKoreanClassification(value);
+          const fngClassEl = document.getElementById('fng-class');
+          fngClassEl.textContent = cls.text;
+          fngClassEl.className = `text-xs text-center ${cls.color}`;
+
+          const rotation = value * 1.8 - 90;
+          document.getElementById('fng-needle').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+        }
+
       } catch (err) {
         console.error('데이터 업데이트 오류:', err);
       }
     }
 
-    // 즉시 실행 + 1분마다
+    // 공포탐욕 지수 한글 매핑 함수
+    function getKoreanClassification(value) {
+      if (value <= 24) return { text: '극단적 공포', color: 'text-red-500' };
+      if (value <= 49) return { text: '공포', color: 'text-orange-500' };
+      if (value === 50) return { text: '중립', color: 'text-gray-400' };
+      if (value <= 74) return { text: '탐욕', color: 'text-green-500' };
+      return { text: '극단적 탐욕', color: 'text-emerald-500' };
+    }
+
+    // 페이지 로드 시 즉시 실행
     updateAllData();
+
+    // 1분마다 업데이트
     setInterval(updateAllData, 60 * 1000);
   </script>
 
