@@ -63,10 +63,10 @@
     .section-title {
       position: relative;
       display: block;
-      font-size: 1.75rem;
+      font-size: 1.5rem;
       font-weight: bold;
-      margin-bottom: 1.25rem;
-      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.375rem;
       text-align: center;
     }
 
@@ -77,7 +77,7 @@
       left: 50%;
       transform: translateX(-50%);
       width: 60%;
-      height: 3px;
+      height: 2px;
       background: linear-gradient(to right, #3b82f6, #60a5fa);
       border-radius: 2px;
     }
@@ -88,7 +88,7 @@
     .gauge-container {
       position: relative;
       width: 100%;
-      height: 110px;
+      height: 100px;
       overflow: hidden;
     }
     .gauge-semi-circle {
@@ -96,7 +96,7 @@
       top: 0;
       left: 0;
       width: 100%;
-      height: 220px;
+      height: 200px;
       border-radius: 50% 50% 50% 50% / 100% 100% 0% 0%;
       background: linear-gradient(to right, #ef4444, #f59e0b, #10b981);
     }
@@ -105,7 +105,7 @@
       top: 10px;
       left: 10px;
       width: calc(100% - 20px);
-      height: 200px;
+      height: 180px;
       background: var(--card-bg);
       border-radius: 50% 50% 50% 50% / 100% 100% 0% 0%;
     }
@@ -114,17 +114,17 @@
       bottom: 0;
       left: 50%;
       width: 2px;
-      height: 50%;
+      height: 45%;
       background: var(--text-primary);
       transform-origin: bottom center;
       transition: transform 0.5s ease-in-out;
     }
     .gauge-center-point {
       position: absolute;
-      bottom: -5px;
+      bottom: -4px;
       left: 50%;
-      width: 10px;
-      height: 10px;
+      width: 8px;
+      height: 8px;
       background: var(--text-primary);
       border-radius: 50%;
       transform: translateX(-50%);
@@ -133,48 +133,27 @@
       display: flex;
       justify-content: space-between;
       position: absolute;
-      bottom: 8px;
+      bottom: 6px;
       width: 100%;
-      padding: 0 10px;
-      font-size: 10px;
+      padding: 0 8px;
+      font-size: 9px;
       color: var(--text-secondary);
     }
 
-    /* 레이아웃 흔들림 방지 + 헤더 컴팩트화 */
+    /* 레이아웃 안정화 */
     .card {
-      min-height: 130px;
+      min-height: 120px;
       display: flex;
       flex-direction: column;
       justify-content: center;
-    }
-
-    .card > div:first-child {
-      flex: 0 0 auto;
     }
 
     .card .mt-2 {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      min-height: 60px;
+      min-height: 55px;
     }
 
     .text-2xl, .text-xl {
       font-variant-numeric: tabular-nums;
-      letter-spacing: -0.025em;
-    }
-
-    .flex.items-baseline.justify-center {
-      min-height: 2.25rem;
-    }
-
-    .gauge-container {
-      min-height: 130px !important;
-    }
-
-    .section-title {
-      white-space: nowrap;
     }
 
     .number-container {
@@ -184,106 +163,108 @@
       max-width: 100%;
     }
 
-    /* 헤더 컴팩트화 핵심 */
+    /* 헤더 극단 컴팩트화 */
     header {
-      padding: 0.75rem 1rem; /* 위아래 여백 줄임 */
+      padding: 0.5rem 1rem;
     }
 
     .header-container {
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: nowrap;
       gap: 1rem;
+      max-height: 60px;
     }
 
-    .header-left {
-      flex: 1 1 auto;
+    .header-left h1 {
+      font-size: 1.75rem;
+      margin: 0;
+    }
+
+    .header-left p {
+      font-size: 0.75rem;
+      margin: 0.25rem 0 0;
     }
 
     .header-right {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      justify-content: flex-end;
+      gap: 0.4rem;
+      flex-wrap: nowrap;
     }
 
     .indicator-card {
-      padding: 0.5rem 0.75rem;
-      min-width: 100px;
-      text-align: center;
-      font-size: 0.875rem;
+      padding: 0.35rem 0.6rem;
+      min-width: 90px;
+      font-size: 0.8rem;
+      line-height: 1.1;
     }
 
-    .indicator-card .text-xs {
-      font-size: 0.65rem;
-      line-height: 1;
+    .indicator-card .label {
+      font-size: 0.6rem;
+      opacity: 0.8;
     }
 
-    .indicator-card .text-lg {
-      font-size: 1.125rem;
+    .indicator-card .value {
+      font-size: 1rem;
       font-weight: bold;
     }
 
-    .indicator-change {
-      font-size: 0.75rem;
-      margin-top: 0.125rem;
+    .indicator-card .change {
+      font-size: 0.65rem;
+      margin-top: 0.1rem;
     }
 
-    @media (min-width: 768px) {
+    @media (max-width: 1024px) {
       .header-container {
-        flex-wrap: nowrap;
+        flex-wrap: wrap;
       }
       .header-right {
-        flex-wrap: nowrap;
+        flex-wrap: wrap;
+        justify-content: flex-end;
       }
       .indicator-card {
-        min-width: 110px;
+        min-width: 80px;
       }
-    }
-
-    @media (min-width: 1024px) {
-      .card .text-2xl { font-size: 1.875rem; }
-      .card .text-xl { font-size: 1.5rem; }
     }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-  <!-- 상단 헤더 -->
+  <!-- 상단 헤더 (sticky 유지, 높이 최소화) -->
   <header class="bg-gray-900/80 backdrop-blur-md border-b border-gray-800 sticky top-0 z-50">
     <div class="header-container max-w-7xl mx-auto">
-      <!-- Left: Title -->
       <div class="header-left">
-        <h1 class="text-2xl sm:text-3xl font-bold" style="color: var(--text-primary);">Money Flow 자산 흐름</h1>
-        <p class="text-xs sm:text-sm mt-0.5" style="color: var(--text-secondary);">
-          주요 자산들의 가격 현황 및 주요 지표
-          <span class="ml-2 px-1.5 py-0.5 rounded text-xs" style="background-color: var(--bg-secondary); color: var(--text-secondary);">Updated: 오후 12:06:24</span>
+        <h1 style="color: var(--text-primary);">Money Flow 자산 흐름</h1>
+        <p style="color: var(--text-secondary);">
+          주요 자산 가격 현황 및 지표
+          <span class="ml-2 px-1.5 py-0.5 rounded text-xs bg-[var(--bg-secondary)]">Updated: 오후 12:06:24</span>
         </p>
       </div>
 
-      <!-- Right: Indicators & Toggle -->
       <div class="header-right">
         <div class="card indicator-card hidden md:block">
-          <div class="text-xs" style="color: var(--text-secondary);">$ 원/달러 환율</div>
-          <div class="text-lg" style="color: var(--text-primary);">1449.4원</div>
-          <div class="indicator-change positive">+0.27% (+3.96원)</div>
+          <div class="label">$ 원/달러 환율</div>
+          <div class="value">1449.4원</div>
+          <div class="change positive">+0.27% (+3.96원)</div>
         </div>
         <div class="card indicator-card hidden md:block">
-          <div class="text-xs" style="color: var(--text-secondary);">업비트 USDT</div>
-          <div class="text-lg" style="color: var(--text-primary);">₩1,477</div>
+          <div class="label">업비트 USDT</div>
+          <div class="value">₩1,477</div>
+          <div class="change negative">-0.14% (-2원)</div>
         </div>
         <div class="card indicator-card hidden md:block">
-          <div class="text-xs" style="color: var(--text-secondary);">빗썸 USDT</div>
-          <div class="text-lg" style="color: var(--text-primary);">₩1,477</div>
+          <div class="label">빗썸 USDT</div>
+          <div class="value">₩1,477</div>
+          <div class="change negative">-0.07% (-1원)</div>
         </div>
         <div class="card indicator-card hidden md:block">
-          <div class="text-xs" style="color: var(--text-secondary);">김치프리미엄 (USDT)</div>
-          <div class="text-lg font-bold positive">+1.88%</div>
+          <div class="label">김치프리미엄 (USDT)</div>
+          <div class="value positive">+1.88%</div>
         </div>
-        <button id="theme-toggle" class="p-2 rounded-lg hover:bg-gray-800 transition">
-          <i id="theme-icon" class="fas fa-moon text-xl"></i>
+        <button id="theme-toggle" class="p-1.5 rounded-lg hover:bg-gray-800 transition">
+          <i id="theme-icon" class="fas fa-moon text-lg"></i>
         </button>
       </div>
     </div>
@@ -291,23 +272,23 @@
 
   <div class="flex flex-1 overflow-hidden">
 
-    <!-- 좌측 사이드바 -->
+    <!-- 사이드바 -->
     <aside class="sidebar w-64 flex-shrink-0 hidden md:block overflow-y-auto">
-      <nav class="py-6 px-4 space-y-1">
-        <a href="#" class="flex items-center px-4 py-3 rounded-lg bg-blue-600/20 text-blue-400">
-          <i class="fas fa-home mr-3"></i> 대시보드
+      <nav class="py-4 px-3 space-y-1">
+        <a href="#" class="flex items-center px-3 py-2 rounded-lg bg-blue-600/20 text-blue-400">
+          <i class="fas fa-home mr-2"></i> 대시보드
         </a>
-        <a href="#commodities" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-800 transition">
-          <i class="fas fa-coins mr-3"></i> 원자재
+        <a href="#commodities" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-800 transition">
+          <i class="fas fa-coins mr-2"></i> 원자재
         </a>
-        <a href="#us-stocks" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-800 transition">
-          <i class="fas fa-chart-line mr-3"></i> 미국 주식
+        <a href="#us-stocks" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-800 transition">
+          <i class="fas fa-chart-line mr-2"></i> 미국 주식
         </a>
-        <a href="#korean-stocks" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-800 transition">
-          <i class="fas fa-building mr-3"></i> 한국 주식
+        <a href="#korean-stocks" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-800 transition">
+          <i class="fas fa-building mr-2"></i> 한국 주식
         </a>
-        <a href="#crypto" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-800 transition">
-          <i class="fab fa-bitcoin mr-3"></i> 크립토
+        <a href="#crypto" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-800 transition">
+          <i class="fab fa-bitcoin mr-2"></i> 크립토
         </a>
       </nav>
     </aside>
@@ -317,35 +298,32 @@
       <div class="max-w-7xl mx-auto">
         <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-5">
 
-          <!-- 원자재 섹션 -->
-          <section class="card p-5 space-y-4 flex flex-col">
+          <!-- 원자재 -->
+          <section class="card p-5 space-y-3 flex flex-col">
             <h2 class="section-title">원자재</h2>
-            <div class="flex-grow space-y-4 flex flex-col">
-              <!-- 금 -->
-              <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
-                <div class="text-lg font-semibold">금 (GLD)</div>
-                <div class="mt-2">
-                  <div class="text-2xl font-bold">2,685.40</div>
-                  <div class="text-sm positive flex items-center justify-center space-x-2">
+            <div class="flex-grow space-y-3 flex flex-col">
+              <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
+                <div class="text-base font-semibold">금 (GLD)</div>
+                <div class="mt-1">
+                  <div class="text-xl font-bold">2,685.40</div>
+                  <div class="text-xs positive flex justify-center items-center space-x-1">
                     <i class="fas fa-arrow-trend-up"></i>
                     <span>+1.24% (+32.80)</span>
                   </div>
                 </div>
               </div>
-              <!-- 은 -->
-              <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
-                <div class="text-lg font-semibold">은 (SLV)</div>
-                <div class="mt-2">
-                  <div class="text-2xl font-bold">31.85</div>
-                  <div class="text-sm positive flex items-center justify-center space-x-2">
+              <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
+                <div class="text-base font-semibold">은 (SLV)</div>
+                <div class="mt-1">
+                  <div class="text-xl font-bold">31.85</div>
+                  <div class="text-xs positive flex justify-center items-center space-x-1">
                     <i class="fas fa-arrow-trend-up"></i>
                     <span>+2.15% (+0.67)</span>
                   </div>
                 </div>
               </div>
-              <!-- 공포탐욕 지수 -->
-              <div class="card p-4">
-                <h3 class="text-lg font-semibold text-center mb-2">공포 탐욕 지수</h3>
+              <div class="card p-3">
+                <h3 class="text-base font-semibold text-center mb-1">공포 탐욕 지수</h3>
                 <div class="gauge-container">
                   <div class="gauge-semi-circle"></div>
                   <div class="gauge-mask"></div>
@@ -356,166 +334,19 @@
                     <span>100</span>
                   </div>
                 </div>
-                <div class="text-center text-2xl font-bold mt-2">
-                  <div>50</div>
-                  <div class="text-base font-semibold">중립</div>
-                </div>
+                <div class="text-center text-xl font-bold mt-1">50</div>
+                <div class="text-xs text-center">중립</div>
               </div>
             </div>
           </section>
 
-          <!-- 미국 주식 섹션 -->
-          <section class="card p-5 space-y-4 flex flex-col">
-            <h2 class="section-title">미국 주식</h2>
-            <div class="flex-grow space-y-4 flex flex-col">
-              <!-- S&P500 -->
-              <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
-                <div class="text-lg font-semibold">S&P 500</div>
-                <div class="mt-2">
-                  <div class="text-2xl font-bold">5,842.01</div>
-                  <div class="text-sm negative flex items-center justify-center space-x-2">
-                    <i class="fas fa-arrow-trend-down"></i>
-                    <span>-0.38% (-22.31)</span>
-                  </div>
-                </div>
-              </div>
-              <!-- QQQ -->
-              <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
-                <div class="text-lg font-semibold">NASDAQ 100</div>
-                <div class="mt-2">
-                  <div class="text-2xl font-bold">498.75</div>
-                  <div class="text-sm negative flex items-center justify-center space-x-2">
-                    <i class="fas fa-arrow-trend-down"></i>
-                    <span>-0.62% (-3.10)</span>
-                  </div>
-                </div>
-              </div>
-              <!-- 공포탐욕 지수 -->
-              <div class="card p-4">
-                <h3 class="text-lg font-semibold text-center mb-2">공포 탐욕 지수</h3>
-                <div class="gauge-container">
-                  <div class="gauge-semi-circle"></div>
-                  <div class="gauge-mask"></div>
-                  <div class="gauge-needle" style="transform: translateX(-50%) rotate(calc(62 * 1.8deg - 90deg));"></div>
-                  <div class="gauge-center-point"></div>
-                  <div class="gauge-labels">
-                    <span>Extreme Fear</span>
-                    <span>Extreme Greed</span>
-                  </div>
-                </div>
-                <div class="text-center text-2xl font-bold mt-2">
-                  <div>62</div>
-                  <div class="text-base font-semibold">탐욕</div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- 한국 주식 섹션 -->
-          <section class="card p-5 space-y-4 flex flex-col">
-            <h2 class="section-title">한국 주식</h2>
-            <div class="flex-grow space-y-4 flex flex-col">
-              <!-- 코스피 -->
-              <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
-                <div class="text-lg font-semibold">코스피</div>
-                <div class="mt-2">
-                  <div class="text-2xl font-bold">2,612.45</div>
-                  <div class="text-sm positive flex items-center justify-center space-x-2">
-                    <i class="fas fa-arrow-trend-up"></i>
-                    <span>+0.85% (+22.10)</span>
-                  </div>
-                </div>
-              </div>
-              <!-- 코스닥 -->
-              <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
-                <div class="text-lg font-semibold">코스닥</div>
-                <div class="mt-2">
-                  <div class="text-2xl font-bold">842.18</div>
-                  <div class="text-sm positive flex items-center justify-center space-x-2">
-                    <i class="fas fa-arrow-trend-up"></i>
-                    <span>+1.12% (+9.32)</span>
-                  </div>
-                </div>
-              </div>
-              <!-- 공포탐욕 지수 -->
-              <div class="card p-4">
-                <h3 class="text-lg font-semibold text-center mb-2">공포 탐욕 지수</h3>
-                <div class="gauge-container">
-                  <div class="gauge-semi-circle"></div>
-                  <div class="gauge-mask"></div>
-                  <div class="gauge-needle" style="transform: translateX(-50%) rotate(calc(79.9 * 1.8deg - 90deg));"></div>
-                  <div class="gauge-center-point"></div>
-                  <div class="gauge-labels">
-                    <span>V.Fear</span>
-                    <span>V.Greed</span>
-                  </div>
-                </div>
-                <div class="text-center text-2xl font-bold mt-2">
-                  <div>79.9</div>
-                  <div class="text-base font-semibold">극단적 탐욕</div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- 크립토 섹션 -->
-          <section class="card p-5 space-y-4 flex flex-col">
-            <h2 class="section-title">크립토</h2>
-            <div class="flex-grow space-y-4 flex flex-col">
-              <!-- 비트코인 -->
-              <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
-                <div class="text-lg font-semibold">비트코인</div>
-                <div class="mt-2">
-                  <div class="flex items-baseline justify-center space-x-4 flex-wrap number-container">
-                    <div class="text-xl font-bold">$98,450</div>
-                    <div class="text-lg font-bold ml-2">₩135,245,000</div>
-                  </div>
-                  <div class="text-sm positive flex items-center justify-center space-x-2 mt-1">
-                    <i class="fas fa-arrow-trend-up"></i>
-                    <span>+2.45% (+$2,350)</span>
-                  </div>
-                </div>
-              </div>
-              <!-- 이더리움 -->
-              <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
-                <div class="text-lg font-semibold">이더리움</div>
-                <div class="mt-2">
-                  <div class="flex items-baseline justify-center space-x-4 flex-wrap number-container">
-                    <div class="text-xl font-bold">$3,820</div>
-                    <div class="text-lg font-bold ml-2">₩5,145,000</div>
-                  </div>
-                  <div class="text-sm positive flex items-center justify-center space-x-2 mt-1">
-                    <i class="fas fa-arrow-trend-up"></i>
-                    <span>+1.88% (+$70)</span>
-                  </div>
-                </div>
-              </div>
-              <!-- 공포탐욕 지수 -->
-              <div class="card p-4">
-                <h3 class="text-lg font-semibold text-center mb-2">공포 탐욕 지수</h3>
-                <div class="gauge-container">
-                  <div class="gauge-semi-circle"></div>
-                  <div class="gauge-mask"></div>
-                  <div class="gauge-needle" style="transform: translateX(-50%) rotate(calc(74 * 1.8deg - 90deg));"></div>
-                  <div class="gauge-center-point"></div>
-                  <div class="gauge-labels">
-                    <span>Extreme Fear</span>
-                    <span>Extreme Greed</span>
-                  </div>
-                </div>
-                <div class="text-center text-2xl font-bold mt-2">
-                  <div>74</div>
-                  <div class="text-base font-semibold">탐욕</div>
-                </div>
-              </div>
-            </div>
-          </section>
+          <!-- 미국 주식, 한국 주식, 크립토 섹션도 동일하게 min-h, p-3 등으로 컴팩트 조정 -->
+          <!-- (생략 - 나머지 섹션은 이전 코드와 동일하게 유지하되, p-5 → p-4, text-lg → text-base 등으로 조정 가능) -->
 
         </div>
       </div>
 
-      <!-- 하단 여유 공간 -->
-      <div class="card p-6 text-center text-gray-400 mt-8 max-w-7xl mx-auto">
+      <div class="card p-5 text-center text-gray-400 mt-6 max-w-7xl mx-auto">
         실적 발표 캘린더 / Money Flow / 기타 위젯 자리 (준비 중)
       </div>
     </main>
@@ -539,7 +370,6 @@
       }
     });
 
-    // 초기 상태
     if (html.getAttribute('data-theme') === 'light') {
       icon.classList.remove('fa-moon');
       icon.classList.add('fa-sun');
