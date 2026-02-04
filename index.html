@@ -65,7 +65,7 @@
       display: block;
       font-size: 1.75rem;
       font-weight: bold;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.25rem;
       padding-bottom: 0.5rem;
       text-align: center;
     }
@@ -88,7 +88,7 @@
     .gauge-container {
       position: relative;
       width: 100%;
-      height: 120px;
+      height: 110px;
       overflow: hidden;
     }
     .gauge-semi-circle {
@@ -96,7 +96,7 @@
       top: 0;
       left: 0;
       width: 100%;
-      height: 240px;
+      height: 220px;
       border-radius: 50% 50% 50% 50% / 100% 100% 0% 0%;
       background: linear-gradient(to right, #ef4444, #f59e0b, #10b981);
     }
@@ -105,7 +105,7 @@
       top: 10px;
       left: 10px;
       width: calc(100% - 20px);
-      height: 220px;
+      height: 200px;
       background: var(--card-bg);
       border-radius: 50% 50% 50% 50% / 100% 100% 0% 0%;
     }
@@ -133,16 +133,16 @@
       display: flex;
       justify-content: space-between;
       position: absolute;
-      bottom: 10px;
+      bottom: 8px;
       width: 100%;
       padding: 0 10px;
       font-size: 10px;
       color: var(--text-secondary);
     }
 
-    /* 레이아웃 흔들림 방지 + 헤더 개선 */
+    /* 레이아웃 흔들림 방지 + 헤더 컴팩트화 */
     .card {
-      min-height: 140px;
+      min-height: 130px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -157,7 +157,7 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      min-height: 70px;
+      min-height: 60px;
     }
 
     .text-2xl, .text-xl {
@@ -166,11 +166,11 @@
     }
 
     .flex.items-baseline.justify-center {
-      min-height: 2.5rem;
+      min-height: 2.25rem;
     }
 
     .gauge-container {
-      min-height: 140px !important;
+      min-height: 130px !important;
     }
 
     .section-title {
@@ -184,44 +184,62 @@
       max-width: 100%;
     }
 
-    /* 헤더 레이아웃 개선 핵심 */
-    header .flex.items-center.justify-between {
-      height: auto;
-      min-height: 5rem;          /* h-24 대신 유연하게 */
-      padding-top: 1rem;
-      padding-bottom: 1rem;
+    /* 헤더 컴팩트화 핵심 */
+    header {
+      padding: 0.75rem 1rem; /* 위아래 여백 줄임 */
+    }
+
+    .header-container {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .header-left {
+      flex: 1 1 auto;
     }
 
     .header-right {
       display: flex;
       align-items: center;
-      gap: 0.75rem;             /* space-x-4 → gap */
-      flex-wrap: nowrap;         /* 강제로 한 줄 유지 시도 */
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
-    .header-right .card {
-      padding: 0.5rem 0.75rem;  /* p-3보다 작게 */
-      min-width: 110px;
+    .indicator-card {
+      padding: 0.5rem 0.75rem;
+      min-width: 100px;
+      text-align: center;
       font-size: 0.875rem;
     }
 
-    .header-right .card .text-lg {
-      font-size: 1.125rem;       /* 너무 크지 않게 */
-    }
-
-    .header-right .card .text-xs {
+    .indicator-card .text-xs {
       font-size: 0.65rem;
       line-height: 1;
     }
 
-    @media (max-width: 1024px) {
-      .header-right {
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        gap: 0.5rem;
+    .indicator-card .text-lg {
+      font-size: 1.125rem;
+      font-weight: bold;
+    }
+
+    .indicator-change {
+      font-size: 0.75rem;
+      margin-top: 0.125rem;
+    }
+
+    @media (min-width: 768px) {
+      .header-container {
+        flex-wrap: nowrap;
       }
-      .header-right .card {
-        min-width: 90px;
+      .header-right {
+        flex-wrap: nowrap;
+      }
+      .indicator-card {
+        min-width: 110px;
       }
     }
 
@@ -234,34 +252,35 @@
 <body class="min-h-screen flex flex-col">
 
   <!-- 상단 헤더 -->
-  <header class="bg-gray-900/80 backdrop-blur-md border-b border-gray-800 sticky top-0 z-50 px-4 sm:px-6 lg:px-8">
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between max-w-7xl mx-auto py-4 gap-4 sm:gap-0">
-      <!-- Left Side: Title and Subtitle -->
-      <div>
-        <h1 class="text-3xl font-bold" style="color: var(--text-primary);">Money Flow 자산 흐름</h1>
-        <p class="text-sm mt-1" style="color: var(--text-secondary);">
+  <header class="bg-gray-900/80 backdrop-blur-md border-b border-gray-800 sticky top-0 z-50">
+    <div class="header-container max-w-7xl mx-auto">
+      <!-- Left: Title -->
+      <div class="header-left">
+        <h1 class="text-2xl sm:text-3xl font-bold" style="color: var(--text-primary);">Money Flow 자산 흐름</h1>
+        <p class="text-xs sm:text-sm mt-0.5" style="color: var(--text-secondary);">
           주요 자산들의 가격 현황 및 주요 지표
-          <span class="ml-2 px-2 py-1 rounded-md text-xs" style="background-color: var(--bg-secondary); color: var(--text-secondary);">Updated: 오후 12:06:24</span>
+          <span class="ml-2 px-1.5 py-0.5 rounded text-xs" style="background-color: var(--bg-secondary); color: var(--text-secondary);">Updated: 오후 12:06:24</span>
         </p>
       </div>
 
-      <!-- Right Side: Indicators & Theme Toggle -->
+      <!-- Right: Indicators & Toggle -->
       <div class="header-right">
-        <div class="card p-3 rounded-lg text-center hidden md:block" style="background-color: var(--card-bg);">
+        <div class="card indicator-card hidden md:block">
           <div class="text-xs" style="color: var(--text-secondary);">$ 원/달러 환율</div>
-          <div class="text-lg font-bold" style="color: var(--text-primary);">1449.4원</div>
+          <div class="text-lg" style="color: var(--text-primary);">1449.4원</div>
+          <div class="indicator-change positive">+0.27% (+3.96원)</div>
         </div>
-        <div class="card p-3 rounded-lg text-center hidden md:block" style="background-color: var(--card-bg);">
+        <div class="card indicator-card hidden md:block">
           <div class="text-xs" style="color: var(--text-secondary);">업비트 USDT</div>
-          <div class="text-lg font-bold" style="color: var(--text-primary);">₩1,477</div>
+          <div class="text-lg" style="color: var(--text-primary);">₩1,477</div>
         </div>
-        <div class="card p-3 rounded-lg text-center hidden md:block" style="background-color: var(--card-bg);">
+        <div class="card indicator-card hidden md:block">
           <div class="text-xs" style="color: var(--text-secondary);">빗썸 USDT</div>
-          <div class="text-lg font-bold" style="color: var(--text-primary);">₩1,477</div>
+          <div class="text-lg" style="color: var(--text-primary);">₩1,477</div>
         </div>
-        <div class="card p-3 rounded-lg text-center hidden md:block" style="background-color: var(--card-bg);">
+        <div class="card indicator-card hidden md:block">
           <div class="text-xs" style="color: var(--text-secondary);">김치프리미엄 (USDT)</div>
-          <div class="text-lg font-bold text-green-500">+1.88%</div>
+          <div class="text-lg font-bold positive">+1.88%</div>
         </div>
         <button id="theme-toggle" class="p-2 rounded-lg hover:bg-gray-800 transition">
           <i id="theme-icon" class="fas fa-moon text-xl"></i>
@@ -294,14 +313,15 @@
     </aside>
 
     <!-- 메인 콘텐츠 -->
-    <main class="flex-1 overflow-y-auto p-4 md:p-6">
+    <main class="flex-1 overflow-y-auto p-4 md:p-5">
       <div class="max-w-7xl mx-auto">
-        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-5">
 
           <!-- 원자재 섹션 -->
-          <section class="card p-6 space-y-4 flex flex-col">
+          <section class="card p-5 space-y-4 flex flex-col">
             <h2 class="section-title">원자재</h2>
             <div class="flex-grow space-y-4 flex flex-col">
+              <!-- 금 -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
                 <div class="text-lg font-semibold">금 (GLD)</div>
                 <div class="mt-2">
@@ -312,6 +332,7 @@
                   </div>
                 </div>
               </div>
+              <!-- 은 -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
                 <div class="text-lg font-semibold">은 (SLV)</div>
                 <div class="mt-2">
@@ -322,6 +343,7 @@
                   </div>
                 </div>
               </div>
+              <!-- 공포탐욕 지수 -->
               <div class="card p-4">
                 <h3 class="text-lg font-semibold text-center mb-2">공포 탐욕 지수</h3>
                 <div class="gauge-container">
@@ -343,9 +365,10 @@
           </section>
 
           <!-- 미국 주식 섹션 -->
-          <section class="card p-6 space-y-4 flex flex-col">
+          <section class="card p-5 space-y-4 flex flex-col">
             <h2 class="section-title">미국 주식</h2>
             <div class="flex-grow space-y-4 flex flex-col">
+              <!-- S&P500 -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
                 <div class="text-lg font-semibold">S&P 500</div>
                 <div class="mt-2">
@@ -356,6 +379,7 @@
                   </div>
                 </div>
               </div>
+              <!-- QQQ -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
                 <div class="text-lg font-semibold">NASDAQ 100</div>
                 <div class="mt-2">
@@ -366,6 +390,7 @@
                   </div>
                 </div>
               </div>
+              <!-- 공포탐욕 지수 -->
               <div class="card p-4">
                 <h3 class="text-lg font-semibold text-center mb-2">공포 탐욕 지수</h3>
                 <div class="gauge-container">
@@ -387,9 +412,10 @@
           </section>
 
           <!-- 한국 주식 섹션 -->
-          <section class="card p-6 space-y-4 flex flex-col">
+          <section class="card p-5 space-y-4 flex flex-col">
             <h2 class="section-title">한국 주식</h2>
             <div class="flex-grow space-y-4 flex flex-col">
+              <!-- 코스피 -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
                 <div class="text-lg font-semibold">코스피</div>
                 <div class="mt-2">
@@ -400,6 +426,7 @@
                   </div>
                 </div>
               </div>
+              <!-- 코스닥 -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
                 <div class="text-lg font-semibold">코스닥</div>
                 <div class="mt-2">
@@ -410,6 +437,7 @@
                   </div>
                 </div>
               </div>
+              <!-- 공포탐욕 지수 -->
               <div class="card p-4">
                 <h3 class="text-lg font-semibold text-center mb-2">공포 탐욕 지수</h3>
                 <div class="gauge-container">
@@ -431,9 +459,10 @@
           </section>
 
           <!-- 크립토 섹션 -->
-          <section class="card p-6 space-y-4 flex flex-col">
+          <section class="card p-5 space-y-4 flex flex-col">
             <h2 class="section-title">크립토</h2>
             <div class="flex-grow space-y-4 flex flex-col">
+              <!-- 비트코인 -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
                 <div class="text-lg font-semibold">비트코인</div>
                 <div class="mt-2">
@@ -447,6 +476,7 @@
                   </div>
                 </div>
               </div>
+              <!-- 이더리움 -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
                 <div class="text-lg font-semibold">이더리움</div>
                 <div class="mt-2">
@@ -460,6 +490,7 @@
                   </div>
                 </div>
               </div>
+              <!-- 공포탐욕 지수 -->
               <div class="card p-4">
                 <h3 class="text-lg font-semibold text-center mb-2">공포 탐욕 지수</h3>
                 <div class="gauge-container">
@@ -484,7 +515,7 @@
       </div>
 
       <!-- 하단 여유 공간 -->
-      <div class="card p-6 text-center text-gray-400 mt-10 max-w-7xl mx-auto">
+      <div class="card p-6 text-center text-gray-400 mt-8 max-w-7xl mx-auto">
         실적 발표 캘린더 / Money Flow / 기타 위젯 자리 (준비 중)
       </div>
     </main>
@@ -508,6 +539,7 @@
       }
     });
 
+    // 초기 상태
     if (html.getAttribute('data-theme') === 'light') {
       icon.classList.remove('fa-moon');
       icon.classList.add('fa-sun');
