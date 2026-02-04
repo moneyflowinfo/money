@@ -62,11 +62,12 @@
 
     .section-title {
       position: relative;
-      display: inline-block;
+      display: block;
       font-size: 1.75rem;
       font-weight: bold;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.5rem;
       padding-bottom: 0.5rem;
+      text-align: center;
     }
 
     .section-title::after {
@@ -81,8 +82,8 @@
       border-radius: 2px;
     }
 
-    .negative { color: var(--negative); }
     .positive { color: var(--positive); }
+    .negative { color: var(--negative); }
 
     .gauge-container {
       position: relative;
@@ -154,7 +155,7 @@
         </p>
       </div>
 
-      <!-- Right Side: Indicators -->
+      <!-- Right Side: Indicators & Theme Toggle -->
       <div class="flex items-center space-x-4">
         <div class="card p-3 rounded-lg text-center hidden md:block" style="background-color: var(--card-bg);">
           <div class="text-xs" style="color: var(--text-secondary);">$ 원/달러 환율</div>
@@ -209,17 +210,11 @@
 
           <!-- 원자재 섹션 -->
           <section class="card p-6 space-y-4 flex flex-col">
-            <h2 class="section-title text-center mx-auto">원자재</h2>
-            <div class="flex items-center justify-center text-4xl mb-2">
-              <i class="fas fa-coins text-yellow-400"></i>
-            </div>
+            <h2 class="section-title">원자재</h2>
             <div class="flex-grow space-y-4 flex flex-col">
               <!-- 금 -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
-                <div class="flex items-center justify-center space-x-4">
-                  <div class="text-lg font-semibold">금 (GLD)</div>
-                  <div class="text-3xl">💰</div>
-                </div>
+                <div class="text-lg font-semibold">금 (GLD)</div>
                 <div class="mt-2">
                   <div class="text-2xl font-bold">2,685.40</div>
                   <div class="text-sm positive flex items-center justify-center space-x-2">
@@ -230,10 +225,7 @@
               </div>
               <!-- 은 -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
-                <div class="flex items-center justify-center space-x-4">
-                  <div class="text-lg font-semibold">은 (SLV)</div>
-                  <div class="text-3xl">🥈</div>
-                </div>
+                <div class="text-lg font-semibold">은 (SLV)</div>
                 <div class="mt-2">
                   <div class="text-2xl font-bold">31.85</div>
                   <div class="text-sm positive flex items-center justify-center space-x-2">
@@ -265,17 +257,11 @@
 
           <!-- 미국 주식 섹션 -->
           <section class="card p-6 space-y-4 flex flex-col">
-            <h2 class="section-title text-center mx-auto">미국 주식</h2>
-            <div class="flex items-center justify-center text-4xl mb-2">
-              <i class="fas fa-chart-line text-blue-400"></i>
-            </div>
+            <h2 class="section-title">미국 주식</h2>
             <div class="flex-grow space-y-4 flex flex-col">
               <!-- S&P500 -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
-                <div class="flex items-center justify-center space-x-4">
-                  <div class="text-lg font-semibold">S&P 500</div>
-                  <i class="fas fa-building-columns text-blue-400 text-2xl"></i>
-                </div>
+                <div class="text-lg font-semibold">S&P 500</div>
                 <div class="mt-2">
                   <div class="text-2xl font-bold">5,842.01</div>
                   <div class="text-sm negative flex items-center justify-center space-x-2">
@@ -286,10 +272,7 @@
               </div>
               <!-- QQQ -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
-                <div class="flex items-center justify-center space-x-4">
-                  <div class="text-lg font-semibold">QQQ</div>
-                  <i class="fas fa-rocket text-purple-400 text-2xl"></i>
-                </div>
+                <div class="text-lg font-semibold">QQQ</div>
                 <div class="mt-2">
                   <div class="text-2xl font-bold">498.75</div>
                   <div class="text-sm negative flex items-center justify-center space-x-2">
@@ -321,17 +304,11 @@
 
           <!-- 한국 주식 섹션 -->
           <section class="card p-6 space-y-4 flex flex-col">
-            <h2 class="section-title text-center mx-auto">한국 주식</h2>
-            <div class="flex items-center justify-center text-4xl mb-2">
-              <i class="fas fa-building text-red-400"></i>
-            </div>
+            <h2 class="section-title">한국 주식</h2>
             <div class="flex-grow space-y-4 flex flex-col">
               <!-- 코스피 -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
-                <div class="flex items-center justify-center space-x-4">
-                  <div class="text-lg font-semibold">코스피</div>
-                  <i class="fas fa-chart-line text-red-400 text-2xl"></i>
-                </div>
+                <div class="text-lg font-semibold">코스피</div>
                 <div class="mt-2">
                   <div class="text-2xl font-bold">2,612.45</div>
                   <div class="text-sm positive flex items-center justify-center space-x-2">
@@ -342,10 +319,7 @@
               </div>
               <!-- 코스닥 -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
-                <div class="flex items-center justify-center space-x-4">
-                  <div class="text-lg font-semibold">코스닥</div>
-                  <i class="fas fa-chart-line text-orange-400 text-2xl"></i>
-                </div>
+                <div class="text-lg font-semibold">코스닥</div>
                 <div class="mt-2">
                   <div class="text-2xl font-bold">842.18</div>
                   <div class="text-sm positive flex items-center justify-center space-x-2">
@@ -377,17 +351,11 @@
 
           <!-- 크립토 섹션 -->
           <section class="card p-6 space-y-4 flex flex-col">
-            <h2 class="section-title text-center mx-auto">크립토</h2>
-            <div class="flex items-center justify-center text-4xl mb-2">
-              <i class="fab fa-bitcoin text-orange-500"></i>
-            </div>
+            <h2 class="section-title">크립토</h2>
             <div class="flex-grow space-y-4 flex flex-col">
               <!-- 비트코인 -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
-                <div class="flex items-center justify-center space-x-4">
-                  <div class="text-lg font-semibold">비트코인</div>
-                  <i class="fab fa-bitcoin text-orange-500 text-2xl"></i>
-                </div>
+                <div class="text-lg font-semibold">비트코인</div>
                 <div class="mt-2">
                   <div class="flex items-baseline justify-center space-x-4 flex-wrap">
                     <div class="text-xl font-bold">$98,450</div>
@@ -401,10 +369,7 @@
               </div>
               <!-- 이더리움 -->
               <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
-                <div class="flex items-center justify-center space-x-4">
-                  <div class="text-lg font-semibold">이더리움</div>
-                  <i class="fab fa-ethereum text-blue-300 text-2xl"></i>
-                </div>
+                <div class="text-lg font-semibold">이더리움</div>
                 <div class="mt-2">
                   <div class="flex items-baseline justify-center space-x-4 flex-wrap">
                     <div class="text-xl font-bold">$3,820</div>
