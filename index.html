@@ -7,7 +7,6 @@
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    /* 기존 스타일 그대로 유지 (생략) */
     :root {
       --bg-primary: #0f172a;
       --bg-secondary: #1e293b;
@@ -19,8 +18,244 @@
       --card-bg: #1e293b;
     }
 
-    body { background: var(--bg-primary); color: var(--text-primary); font-family: 'Pretendard', system-ui, sans-serif; min-height: 100vh; }
-    /* ... 나머지 스타일은 이전과 동일 ... */
+    [data-theme="light"] {
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --card-bg: #ffffff;
+    }
+
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: 'Pretendard', system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: var(--bg-secondary);
+      border-right: 1px solid #334155;
+    }
+
+    [data-theme="light"] .sidebar {
+      border-right: 1px solid #e2e8f0;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    [data-theme="light"] .card {
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
+    }
+
+    .section-title {
+      position: relative;
+      display: block;
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      padding-bottom: 0.375rem;
+      text-align: center;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 2px;
+      background: linear-gradient(to right, #3b82f6, #60a5fa);
+      border-radius: 2px;
+    }
+
+    .positive { color: var(--positive); }
+    .negative { color: var(--negative); }
+
+    .gauge-container {
+      position: relative;
+      width: 100%;
+      height: 100px;
+      overflow: hidden;
+    }
+    .gauge-semi-circle {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 200px;
+      border-radius: 50% 50% 50% 50% / 100% 100% 0% 0%;
+      background: linear-gradient(to right, #ef4444, #f59e0b, #10b981);
+    }
+    .gauge-mask {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: calc(100% - 20px);
+      height: 180px;
+      background: var(--card-bg);
+      border-radius: 50% 50% 50% 50% / 100% 100% 0% 0%;
+    }
+    .gauge-needle {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 2px;
+      height: 45%;
+      background: var(--text-primary);
+      transform-origin: bottom center;
+      transition: transform 0.5s ease-in-out;
+    }
+    .gauge-center-point {
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      width: 8px;
+      height: 8px;
+      background: var(--text-primary);
+      border-radius: 50%;
+      transform: translateX(-50%);
+    }
+    .gauge-labels {
+      display: flex;
+      justify-content: space-between;
+      position: absolute;
+      bottom: 6px;
+      width: 100%;
+      padding: 0 8px;
+      font-size: 9px;
+      color: var(--text-secondary);
+    }
+
+    .card {
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .card .mt-2 {
+      min-height: 55px;
+    }
+
+    .text-2xl, .text-xl {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .number-container {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 100%;
+    }
+
+    header {
+      padding: 0.5rem 1rem;
+    }
+
+    .header-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: nowrap;
+      gap: 1rem;
+      max-height: 64px;
+      height: 64px;
+      overflow: hidden;
+    }
+
+    .header-left h1 {
+      font-size: 1.75rem;
+      margin: 0;
+      line-height: 1.15;
+    }
+
+    .header-left p {
+      font-size: 0.8rem;
+      margin: 0.25rem 0 0;
+      line-height: 1.1;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: nowrap;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .indicator-card {
+      padding: 0.35rem 0.6rem;
+      min-width: 95px;
+      max-height: 54px;
+      font-size: 0.82rem;
+      line-height: 1.15;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .indicator-card .label {
+      font-size: 0.62rem;
+      line-height: 1.05;
+      opacity: 0.8;
+      margin-bottom: 0.12rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .indicator-card .value {
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.15;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .indicator-card .change {
+      font-size: 0.68rem;
+      line-height: 1.1;
+      margin-top: 0.08rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    @media (max-width: 1024px) {
+      .header-container {
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        height: auto;
+        max-height: none;
+      }
+      .header-right {
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+      .indicator-card {
+        min-width: 85px;
+        padding: 0.3rem 0.55rem;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -39,22 +274,22 @@
       <div class="header-right">
         <div class="card indicator-card hidden md:block">
           <div class="label">$ 원/달러 환율</div>
-          <div class="value" id="usdkrw-value">1449.4원</div>
-          <div class="change" id="usdkrw-change">+0.27% (+3.96원)</div>
+          <div class="value" id="usdkrw-value">—</div>
+          <div class="change" id="usdkrw-change">—</div>
         </div>
         <div class="card indicator-card hidden md:block">
           <div class="label">업비트 USDT</div>
-          <div class="value" id="upbit-usdt-value">₩1,477</div>
-          <div class="change" id="upbit-usdt-change">-0.14% (-2원)</div>
+          <div class="value" id="upbit-usdt-value">—</div>
+          <div class="change" id="upbit-usdt-change">—</div>
         </div>
         <div class="card indicator-card hidden md:block">
           <div class="label">빗썸 USDT</div>
-          <div class="value" id="bithumb-usdt-value">₩1,477</div>
-          <div class="change" id="bithumb-usdt-change">-0.07% (-1원)</div>
+          <div class="value" id="bithumb-usdt-value">—</div>
+          <div class="change" id="bithumb-usdt-change">—</div>
         </div>
         <div class="card indicator-card hidden md:block">
           <div class="label">김치프리미엄 (BTC)</div>
-          <div class="value positive" id="kimchi-premium">+1.88%</div>
+          <div class="value" id="kimchi-premium">—</div>
         </div>
         <button id="theme-toggle" class="p-2 rounded-lg hover:bg-gray-800 transition">
           <i id="theme-icon" class="fas fa-moon text-lg"></i>
@@ -63,14 +298,222 @@
     </div>
   </header>
 
-  <!-- 나머지 HTML 구조는 이전과 동일 (원자재, 미국 주식, 한국 주식, 크립토 섹션) -->
+  <div class="flex flex-1 overflow-hidden">
 
-  <!-- 크립토 섹션 내 비트코인과 이더리움 부분 (id 유지) -->
-  <!-- ... 생략 ... -->
+    <!-- 좌측 사이드바 -->
+    <aside class="sidebar w-64 flex-shrink-0 hidden md:block overflow-y-auto">
+      <nav class="py-4 px-3 space-y-1">
+        <a href="#" class="flex items-center px-3 py-2 rounded-lg bg-blue-600/20 text-blue-400">
+          <i class="fas fa-home mr-2"></i> 대시보드
+        </a>
+        <a href="#commodities" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-800 transition">
+          <i class="fas fa-coins mr-2"></i> 원자재
+        </a>
+        <a href="#us-stocks" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-800 transition">
+          <i class="fas fa-chart-line mr-2"></i> 미국 주식
+        </a>
+        <a href="#korean-stocks" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-800 transition">
+          <i class="fas fa-building mr-2"></i> 한국 주식
+        </a>
+        <a href="#crypto" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-800 transition">
+          <i class="fab fa-bitcoin mr-2"></i> 크립토
+        </a>
+      </nav>
+    </aside>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="flex-1 overflow-y-auto p-4 md:p-5">
+      <div class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-5">
+
+          <!-- 원자재 섹션 -->
+          <section class="card p-5 space-y-3 flex flex-col">
+            <h2 class="section-title">원자재</h2>
+            <div class="flex-grow space-y-3 flex flex-col">
+              <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
+                <div class="text-base font-semibold">금 (GLD)</div>
+                <div class="mt-1">
+                  <div class="text-xl font-bold">2,685.40</div>
+                  <div class="text-xs positive flex justify-center items-center space-x-1">
+                    <i class="fas fa-arrow-trend-up"></i>
+                    <span>+1.24% (+32.80)</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
+                <div class="text-base font-semibold">은 (SLV)</div>
+                <div class="mt-1">
+                  <div class="text-xl font-bold">31.85</div>
+                  <div class="text-xs positive flex justify-center items-center space-x-1">
+                    <i class="fas fa-arrow-trend-up"></i>
+                    <span>+2.15% (+0.67)</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-3">
+                <h3 class="text-base font-semibold text-center mb-1">공포 탐욕 지수</h3>
+                <div class="gauge-container">
+                  <div class="gauge-semi-circle"></div>
+                  <div class="gauge-mask"></div>
+                  <div class="gauge-needle" style="transform: translateX(-50%) rotate(calc(50 * 1.8deg - 90deg));"></div>
+                  <div class="gauge-center-point"></div>
+                  <div class="gauge-labels">
+                    <span>0</span>
+                    <span>100</span>
+                  </div>
+                </div>
+                <div class="text-center text-xl font-bold mt-1">50</div>
+                <div class="text-xs text-center">중립</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 미국 주식 섹션 -->
+          <section class="card p-5 space-y-3 flex flex-col">
+            <h2 class="section-title">미국 주식</h2>
+            <div class="flex-grow space-y-3 flex flex-col">
+              <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
+                <div class="text-base font-semibold">S&P 500</div>
+                <div class="mt-1">
+                  <div class="text-xl font-bold">5,842.01</div>
+                  <div class="text-xs negative flex justify-center items-center space-x-1">
+                    <i class="fas fa-arrow-trend-down"></i>
+                    <span>-0.38% (-22.31)</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
+                <div class="text-base font-semibold">NASDAQ 100</div>
+                <div class="mt-1">
+                  <div class="text-xl font-bold">498.75</div>
+                  <div class="text-xs negative flex justify-center items-center space-x-1">
+                    <i class="fas fa-arrow-trend-down"></i>
+                    <span>-0.62% (-3.10)</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-3">
+                <h3 class="text-base font-semibold text-center mb-1">공포 탐욕 지수</h3>
+                <div class="gauge-container">
+                  <div class="gauge-semi-circle"></div>
+                  <div class="gauge-mask"></div>
+                  <div class="gauge-needle" style="transform: translateX(-50%) rotate(calc(62 * 1.8deg - 90deg));"></div>
+                  <div class="gauge-center-point"></div>
+                  <div class="gauge-labels">
+                    <span>Extreme Fear</span>
+                    <span>Extreme Greed</span>
+                  </div>
+                </div>
+                <div class="text-center text-xl font-bold mt-1">62</div>
+                <div class="text-xs text-center">탐욕</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 한국 주식 섹션 -->
+          <section class="card p-5 space-y-3 flex flex-col">
+            <h2 class="section-title">한국 주식</h2>
+            <div class="flex-grow space-y-3 flex flex-col">
+              <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
+                <div class="text-base font-semibold">코스피</div>
+                <div class="mt-1">
+                  <div class="text-xl font-bold">2,612.45</div>
+                  <div class="text-xs positive flex justify-center items-center space-x-1">
+                    <i class="fas fa-arrow-trend-up"></i>
+                    <span>+0.85% (+22.10)</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
+                <div class="text-base font-semibold">코스닥</div>
+                <div class="mt-1">
+                  <div class="text-xl font-bold">842.18</div>
+                  <div class="text-xs positive flex justify-center items-center space-x-1">
+                    <i class="fas fa-arrow-trend-up"></i>
+                    <span>+1.12% (+9.32)</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-3">
+                <h3 class="text-base font-semibold text-center mb-1">공포 탐욕 지수</h3>
+                <div class="gauge-container">
+                  <div class="gauge-semi-circle"></div>
+                  <div class="gauge-mask"></div>
+                  <div class="gauge-needle" style="transform: translateX(-50%) rotate(calc(79.9 * 1.8deg - 90deg));"></div>
+                  <div class="gauge-center-point"></div>
+                  <div class="gauge-labels">
+                    <span>V.Fear</span>
+                    <span>V.Greed</span>
+                  </div>
+                </div>
+                <div class="text-center text-xl font-bold mt-1">79.9</div>
+                <div class="text-xs text-center">극단적 탐욕</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 크립토 섹션 -->
+          <section class="card p-5 space-y-3 flex flex-col">
+            <h2 class="section-title">크립토</h2>
+            <div class="flex-grow space-y-3 flex flex-col">
+              <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
+                <div class="text-base font-semibold">비트코인</div>
+                <div class="mt-1">
+                  <div class="flex items-baseline justify-center space-x-2 flex-wrap number-container" id="btc-price">
+                    <div class="text-lg font-bold">—</div>
+                    <div class="text-base font-bold ml-2">—</div>
+                  </div>
+                  <div class="text-xs positive flex justify-center items-center space-x-1 mt-1" id="btc-change">
+                    <i class="fas fa-arrow-trend-up"></i>
+                    <span>—</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
+                <div class="text-base font-semibold">이더리움</div>
+                <div class="mt-1">
+                  <div class="flex items-baseline justify-center space-x-2 flex-wrap number-container" id="eth-price">
+                    <div class="text-lg font-bold">—</div>
+                    <div class="text-base font-bold ml-2">—</div>
+                  </div>
+                  <div class="text-xs positive flex justify-center items-center space-x-1 mt-1" id="eth-change">
+                    <i class="fas fa-arrow-trend-up"></i>
+                    <span>—</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card p-3">
+                <h3 class="text-base font-semibold text-center mb-1">공포 탐욕 지수</h3>
+                <div class="gauge-container">
+                  <div class="gauge-semi-circle"></div>
+                  <div class="gauge-mask"></div>
+                  <div class="gauge-needle" style="transform: translateX(-50%) rotate(calc(74 * 1.8deg - 90deg));"></div>
+                  <div class="gauge-center-point"></div>
+                  <div class="gauge-labels">
+                    <span>Extreme Fear</span>
+                    <span>Extreme Greed</span>
+                  </div>
+                </div>
+                <div class="text-center text-xl font-bold mt-1">74</div>
+                <div class="text-xs text-center">탐욕</div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+
+      <div class="card p-5 text-center text-gray-400 mt-6 max-w-7xl mx-auto">
+        실적 발표 캘린더 / Money Flow / 기타 위젯 자리 (준비 중)
+      </div>
+    </main>
+  </div>
 
   <!-- 스크립트 -->
   <script>
-    // 테마 토글 (기존 그대로)
+    // 테마 토글
     const toggleBtn = document.getElementById('theme-toggle');
     const icon = document.getElementById('theme-icon');
     const html = document.documentElement;
@@ -92,13 +535,13 @@
       icon.classList.add('fa-sun');
     }
 
-    // 모든 데이터 업데이트 함수
     async function updateAllData() {
       try {
-        // 1. CoinGecko: BTC + ETH
+        // 1. CoinGecko - BTC + ETH
         const cgRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,krw&include_24hr_change=true');
         const cgData = await cgRes.json();
 
+        // 비트코인
         const btc = cgData.bitcoin;
         if (btc) {
           const usd = btc.usd.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
@@ -106,12 +549,16 @@
           const chg = btc.usd_24h_change.toFixed(2);
           const pos = chg >= 0;
 
-          document.getElementById('btc-price').innerHTML = `<div class="text-lg font-bold">$${usd}</div><div class="text-base font-bold ml-2">₩${krw}</div>`;
-          const btcChg = document.getElementById('btc-change');
-          btcChg.className = `text-xs flex justify-center items-center space-x-1 mt-1 ${pos ? 'positive' : 'negative'}`;
-          btcChg.innerHTML = `<i class="fas fa-arrow-trend-${pos ? 'up' : 'down'}"></i><span>${pos ? '+' : ''}${chg}%</span>`;
+          document.getElementById('btc-price').innerHTML = `
+            <div class="text-lg font-bold">$${usd}</div>
+            <div class="text-base font-bold ml-2">₩${krw}</div>
+          `;
+          const btcChgEl = document.getElementById('btc-change');
+          btcChgEl.className = `text-xs flex justify-center items-center space-x-1 mt-1 ${pos ? 'positive' : 'negative'}`;
+          btcChgEl.innerHTML = `<i class="fas fa-arrow-trend-${pos ? 'up' : 'down'}"></i><span>${pos ? '+' : ''}${chg}%</span>`;
         }
 
+        // 이더리움
         const eth = cgData.ethereum;
         if (eth) {
           const usd = eth.usd.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -119,18 +566,21 @@
           const chg = eth.usd_24h_change.toFixed(2);
           const pos = chg >= 0;
 
-          document.getElementById('eth-price').innerHTML = `<div class="text-lg font-bold">$${usd}</div><div class="text-base font-bold ml-2">₩${krw}</div>`;
-          const ethChg = document.getElementById('eth-change');
-          ethChg.className = `text-xs flex justify-center items-center space-x-1 mt-1 ${pos ? 'positive' : 'negative'}`;
-          ethChg.innerHTML = `<i class="fas fa-arrow-trend-${pos ? 'up' : 'down'}"></i><span>${pos ? '+' : ''}${chg}%</span>`;
+          document.getElementById('eth-price').innerHTML = `
+            <div class="text-lg font-bold">$${usd}</div>
+            <div class="text-base font-bold ml-2">₩${krw}</div>
+          `;
+          const ethChgEl = document.getElementById('eth-change');
+          ethChgEl.className = `text-xs flex justify-center items-center space-x-1 mt-1 ${pos ? 'positive' : 'negative'}`;
+          ethChgEl.innerHTML = `<i class="fas fa-arrow-trend-${pos ? 'up' : 'down'}"></i><span>${pos ? '+' : ''}${chg}%</span>`;
         }
 
-        // 2. 환율 USD/KRW (frankfurter.app 사용 - 전일 종가 대비 변동)
+        // 2. 환율 USD/KRW (frankfurter.app)
         const fxRes = await fetch('https://api.frankfurter.app/latest?from=USD&to=KRW');
         const fxData = await fxRes.json();
         const currentKrw = fxData.rates.KRW.toFixed(1);
 
-        // 전일 종가 가져오기 (frankfurter는 과거 데이터도 지원)
+        // 전일 데이터
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         const yesterdayStr = yesterday.toISOString().split('T')[0];
@@ -147,27 +597,31 @@
         fxChgEl.textContent = `${fxPos ? '+' : ''}${fxChgPct}% (${fxPos ? '+' : ''}${fxChgWon}원)`;
         fxChgEl.className = `change ${fxPos ? 'positive' : 'negative'}`;
 
-        // 3. 업비트 BTC-KRW (김치프리미엄 계산용) + USDT
+        // 3. 업비트 BTC-KRW + USDT
         const upRes = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC,KRW-USDT');
         const upData = await upRes.json();
 
         let upBtcKrw = 0;
         let upUsdt = 0;
+        let upUsdtChgRate = 0;
+        let upUsdtChgWon = 0;
+
         upData.forEach(item => {
           if (item.market === 'KRW-BTC') upBtcKrw = item.trade_price;
-          if (item.market === 'KRW-USDT') upUsdt = item.trade_price;
+          if (item.market === 'KRW-USDT') {
+            upUsdt = item.trade_price;
+            upUsdtChgRate = (item.signed_change_rate * 100).toFixed(2);
+            upUsdtChgWon = Math.round(item.signed_change_price);
+          }
         });
 
-        // 업비트 USDT
+        // 업비트 USDT 표시
         if (upUsdt) {
           const price = Math.round(upUsdt).toLocaleString('ko-KR');
-          const chgRate = (upData.find(d => d.market === 'KRW-USDT').signed_change_rate * 100).toFixed(2);
-          const chgWon = Math.round(upData.find(d => d.market === 'KRW-USDT').signed_change_price).toLocaleString('ko-KR');
-          const pos = chgRate >= 0;
-
+          const pos = upUsdtChgRate >= 0;
           document.getElementById('upbit-usdt-value').textContent = `₩${price}`;
           const upChgEl = document.getElementById('upbit-usdt-change');
-          upChgEl.textContent = `${pos ? '+' : ''}${chgRate}% (${pos ? '+' : ''}${chgWon}원)`;
+          upChgEl.textContent = `${pos ? '+' : ''}${upUsdtChgRate}% (${pos ? '+' : ''}${upUsdtChgWon.toLocaleString('ko-KR')}원)`;
           upChgEl.className = `change ${pos ? 'positive' : 'negative'}`;
         }
 
@@ -186,7 +640,7 @@
           bhChgEl.className = `change ${pos ? 'positive' : 'negative'}`;
         }
 
-        // 5. 김치프리미엄 계산 (BTC 기준)
+        // 5. 김치프리미엄 (BTC 기준)
         if (upBtcKrw && btc && currentKrw) {
           const globalBtcKrw = btc.usd * currentKrw;
           const premium = ((upBtcKrw / globalBtcKrw) - 1) * 100;
@@ -197,13 +651,16 @@
           kimchiEl.textContent = `${pos ? '+' : ''}${premiumStr}%`;
           kimchiEl.className = `value ${pos ? 'positive' : 'negative'}`;
         }
+
       } catch (err) {
-        console.error('데이터 업데이트 오류:', err);
+        console.error('데이터 업데이트 중 오류:', err);
       }
     }
 
-    // 즉시 실행 + 1분마다
+    // 페이지 로드 시 즉시 실행
     updateAllData();
+
+    // 60초마다 업데이트
     setInterval(updateAllData, 60 * 1000);
   </script>
 
