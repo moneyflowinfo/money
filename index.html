@@ -274,22 +274,22 @@
       <div class="header-right">
         <div class="card indicator-card hidden md:block">
           <div class="label">$ 원/달러 환율</div>
-          <div class="value">1449.4원</div>
-          <div class="change positive">+0.27% (+3.96원)</div>
+          <div class="value" id="usdkrw-value">1449.4원</div>
+          <div class="change" id="usdkrw-change">+0.27% (+3.96원)</div>
         </div>
         <div class="card indicator-card hidden md:block">
           <div class="label">업비트 USDT</div>
-          <div class="value">₩1,477</div>
-          <div class="change negative">-0.14% (-2원)</div>
+          <div class="value" id="upbit-usdt-value">₩1,477</div>
+          <div class="change" id="upbit-usdt-change">-0.14% (-2원)</div>
         </div>
         <div class="card indicator-card hidden md:block">
           <div class="label">빗썸 USDT</div>
-          <div class="value">₩1,477</div>
-          <div class="change negative">-0.07% (-1원)</div>
+          <div class="value" id="bithumb-usdt-value">₩1,477</div>
+          <div class="change" id="bithumb-usdt-change">-0.07% (-1원)</div>
         </div>
         <div class="card indicator-card hidden md:block">
           <div class="label">김치프리미엄 (USDT)</div>
-          <div class="value positive">+1.88%</div>
+          <div class="value positive" id="kimchi-premium">+1.88%</div>
         </div>
         <button id="theme-toggle" class="p-2 rounded-lg hover:bg-gray-800 transition">
           <i id="theme-icon" class="fas fa-moon text-lg"></i>
@@ -471,21 +471,22 @@
                 </div>
               </div>
 
-              <!-- 이더리움 (아직 하드코딩 상태) -->
+              <!-- 이더리움 -->
               <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
                 <div class="text-base font-semibold">이더리움</div>
                 <div class="mt-1">
-                  <div class="flex items-baseline justify-center space-x-2 flex-wrap number-container">
+                  <div class="flex items-baseline justify-center space-x-2 flex-wrap number-container" id="eth-price">
                     <div class="text-lg font-bold">$3,820</div>
                     <div class="text-base font-bold ml-2">₩5,145,000</div>
                   </div>
-                  <div class="text-xs positive flex justify-center items-center space-x-1 mt-1">
+                  <div class="text-xs positive flex justify-center items-center space-x-1 mt-1" id="eth-change">
                     <i class="fas fa-arrow-trend-up"></i>
                     <span>+1.88% (+$70)</span>
                   </div>
                 </div>
               </div>
 
+              <!-- 공포탐욕 지수 -->
               <div class="card p-3">
                 <h3 class="text-base font-semibold text-center mb-1">공포 탐욕 지수</h3>
                 <div class="gauge-container">
@@ -513,7 +514,7 @@
     </main>
   </div>
 
-  <!-- 테마 토글 + 데이터 업데이트 스크립트 -->
+  <!-- 테마 토글 + 실시간 데이터 업데이트 스크립트 -->
   <script>
     // 테마 토글
     const toggleBtn = document.getElementById('theme-toggle');
@@ -537,52 +538,102 @@
       icon.classList.add('fa-sun');
     }
 
-    // 비트코인 데이터 업데이트 함수
-    function updateBitcoinPrice() {
-      fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,krw&include_24hr_change=true')
-        .then(response => response.json())
+    // 실시간 데이터 업데이트 함수
+    function updateAllData() {
+      // 1. CoinGecko - 비트코인 + 이더리움
+      fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,krw&include_24hr_change=true')
+        .then(res => res.json())
         .then(data => {
+          // 비트코인
           const btc = data.bitcoin;
-          if (!btc) return;
+          if (btc) {
+            const usd = btc.usd.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+            const krw = Math.floor(btc.krw).toLocaleString('ko-KR');
+            const chg = btc.usd_24h_change.toFixed(2);
+            const pos = chg >= 0;
 
-          // USD 가격 (쉼표 포함)
-          const usdPrice = btc.usd.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-          // KRW 가격 (소수점 버림 + 쉼표)
-          const krwPrice = Math.floor(btc.krw).toLocaleString('ko-KR');
-          // 24시간 변동률
-          const change24h = btc.usd_24h_change.toFixed(2);
-          const isPositive = change24h >= 0;
-
-          // 가격 업데이트
-          const priceContainer = document.getElementById('btc-price');
-          if (priceContainer) {
-            priceContainer.innerHTML = `
-              <div class="text-lg font-bold">$${usdPrice}</div>
-              <div class="text-base font-bold ml-2">₩${krwPrice}</div>
+            document.getElementById('btc-price').innerHTML = `
+              <div class="text-lg font-bold">$${usd}</div>
+              <div class="text-base font-bold ml-2">₩${krw}</div>
             `;
+            const btcChgEl = document.getElementById('btc-change');
+            btcChgEl.className = `text-xs flex justify-center items-center space-x-1 mt-1 ${pos ? 'positive' : 'negative'}`;
+            btcChgEl.innerHTML = `<i class="fas fa-arrow-trend-${pos ? 'up' : 'down'}"></i><span>${pos ? '+' : ''}${chg}%</span>`;
           }
 
-          // 변동률 업데이트
-          const changeContainer = document.getElementById('btc-change');
-          if (changeContainer) {
-            changeContainer.className = `text-xs flex justify-center items-center space-x-1 mt-1 ${isPositive ? 'positive' : 'negative'}`;
-            changeContainer.innerHTML = `
-              <i class="fas fa-arrow-trend-${isPositive ? 'up' : 'down'}"></i>
-              <span>${isPositive ? '+' : ''}${change24h}%</span>
+          // 이더리움
+          const eth = data.ethereum;
+          if (eth) {
+            const usd = eth.usd.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+            const krw = Math.floor(eth.krw).toLocaleString('ko-KR');
+            const chg = eth.usd_24h_change.toFixed(2);
+            const pos = chg >= 0;
+
+            document.getElementById('eth-price').innerHTML = `
+              <div class="text-lg font-bold">$${usd}</div>
+              <div class="text-base font-bold ml-2">₩${krw}</div>
             `;
+            const ethChgEl = document.getElementById('eth-change');
+            ethChgEl.className = `text-xs flex justify-center items-center space-x-1 mt-1 ${pos ? 'positive' : 'negative'}`;
+            ethChgEl.innerHTML = `<i class="fas fa-arrow-trend-${pos ? 'up' : 'down'}"></i><span>${pos ? '+' : ''}${chg}%</span>`;
           }
         })
-        .catch(error => {
-          console.error('비트코인 데이터 업데이트 실패:', error);
-          // 실패 시 기존 값 유지 (또는 "오류" 표시 가능)
-        });
+        .catch(err => console.error('CoinGecko 오류:', err));
+
+      // 2. 환율 USD/KRW (무료 API)
+      fetch('https://open.er-api.com/v6/latest/USD?base=USD')
+        .then(res => res.json())
+        .then(data => {
+          if (data.result === 'success') {
+            const krw = data.rates.KRW.toFixed(1);
+            // 변동률은 이 API에서 직접 제공 안 하므로 임시로 0으로 표시 (나중에 다른 API로 교체 가능)
+            document.getElementById('usdkrw-value').textContent = `${krw}원`;
+            document.getElementById('usdkrw-change').textContent = '실시간';
+            document.getElementById('usdkrw-change').className = 'change';
+          }
+        })
+        .catch(err => console.error('환율 API 오류:', err));
+
+      // 3. 업비트 USDT-KRW
+      fetch('https://api.upbit.com/v1/ticker?markets=KRW-USDT')
+        .then(res => res.json())
+        .then(data => {
+          if (data && data[0]) {
+            const price = Math.round(data[0].trade_price).toLocaleString('ko-KR');
+            const chg = (data[0].signed_change_rate * 100).toFixed(2);
+            const pos = chg >= 0;
+
+            document.getElementById('upbit-usdt-value').textContent = `₩${price}`;
+            const upChgEl = document.getElementById('upbit-usdt-change');
+            upChgEl.textContent = `${pos ? '+' : ''}${chg}% (${pos ? '+' : ''}${Math.round(data[0].signed_change_price)}원)`;
+            upChgEl.className = `change ${pos ? 'positive' : 'negative'}`;
+          }
+        })
+        .catch(err => console.error('업비트 USDT 오류:', err));
+
+      // 4. 빗썸 USDT-KRW
+      fetch('https://api.bithumb.com/public/ticker/USDT_KRW')
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === '0000') {
+            const price = Math.round(data.data.closing_price).toLocaleString('ko-KR');
+            const chg = ((data.data.closing_price - data.data.opening_price) / data.data.opening_price * 100).toFixed(2);
+            const pos = chg >= 0;
+
+            document.getElementById('bithumb-usdt-value').textContent = `₩${price}`;
+            const bhChgEl = document.getElementById('bithumb-usdt-change');
+            bhChgEl.textContent = `${pos ? '+' : ''}${chg}%`;
+            bhChgEl.className = `change ${pos ? 'positive' : 'negative'}`;
+          }
+        })
+        .catch(err => console.error('빗썸 USDT 오류:', err));
     }
 
-    // 페이지 로드 시 바로 한 번 실행
-    updateBitcoinPrice();
+    // 페이지 로드 시 즉시 실행
+    updateAllData();
 
-    // 1분(60초)마다 자동 업데이트
-    setInterval(updateBitcoinPrice, 60 * 1000);
+    // 1분(60초)마다 업데이트
+    setInterval(updateAllData, 60 * 1000);
   </script>
 
 </body>
