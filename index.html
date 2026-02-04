@@ -163,7 +163,7 @@
       max-width: 100%;
     }
 
-    /* 헤더 & 지표 카드 극단적으로 얇게 */
+    /* 헤더 & 지표 카드 수정 핵심 */
     header {
       padding: 0.4rem 1rem;
     }
@@ -175,6 +175,8 @@
       flex-wrap: nowrap;
       gap: 0.75rem;
       max-height: 52px;
+      height: 52px;
+      overflow: hidden;
     }
 
     .header-left h1 {
@@ -194,33 +196,50 @@
       align-items: center;
       gap: 0.35rem;
       flex-wrap: nowrap;
+      height: 100%;
+      overflow: hidden;
     }
 
     .indicator-card {
-      padding: 0.1rem 0.2rem;
+      padding: 0.2rem 0.45rem;
       min-width: 85px;
+      max-height: 44px;
       font-size: 0.75rem;
-      line-height: 0.5;
+      line-height: 1.05;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
       text-align: center;
+      white-space: nowrap;
     }
 
     .indicator-card .label {
       font-size: 0.55rem;
-      opacity: 0.75;
       line-height: 1;
-      margin-bottom: 0.1rem;
+      opacity: 0.75;
+      margin-bottom: 0.05rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .indicator-card .value {
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       font-weight: 700;
       line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .indicator-card .change {
-      font-size: 0.6rem;
+      font-size: 0.58rem;
       line-height: 1;
-      margin-top: 0.05rem;
+      margin-top: 0.03rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     @media (max-width: 1024px) {
@@ -234,14 +253,14 @@
       }
       .indicator-card {
         min-width: 78px;
-        padding: 0.2rem 0.45rem;
+        padding: 0.2rem 0.4rem;
       }
     }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-  <!-- 헤더 -->
+  <!-- 상단 헤더 -->
   <header class="bg-gray-900/80 backdrop-blur-md border-b border-gray-800 sticky top-0 z-50">
     <div class="header-container max-w-7xl mx-auto">
       <div class="header-left">
@@ -281,7 +300,7 @@
 
   <div class="flex flex-1 overflow-hidden">
 
-    <!-- 사이드바 -->
+    <!-- 좌측 사이드바 -->
     <aside class="sidebar w-64 flex-shrink-0 hidden md:block overflow-y-auto">
       <nav class="py-4 px-3 space-y-1">
         <a href="#" class="flex items-center px-3 py-2 rounded-lg bg-blue-600/20 text-blue-400">
@@ -307,7 +326,7 @@
       <div class="max-w-7xl mx-auto">
         <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-5">
 
-          <!-- 원자재 -->
+          <!-- 원자재 섹션 -->
           <section class="card p-5 space-y-3 flex flex-col">
             <h2 class="section-title">원자재</h2>
             <div class="flex-grow space-y-3 flex flex-col">
@@ -349,7 +368,7 @@
             </div>
           </section>
 
-          <!-- 미국 주식 -->
+          <!-- 미국 주식 섹션 -->
           <section class="card p-5 space-y-3 flex flex-col">
             <h2 class="section-title">미국 주식</h2>
             <div class="flex-grow space-y-3 flex flex-col">
@@ -391,7 +410,7 @@
             </div>
           </section>
 
-          <!-- 한국 주식 -->
+          <!-- 한국 주식 섹션 -->
           <section class="card p-5 space-y-3 flex flex-col">
             <h2 class="section-title">한국 주식</h2>
             <div class="flex-grow space-y-3 flex flex-col">
@@ -433,7 +452,7 @@
             </div>
           </section>
 
-          <!-- 크립토 -->
+          <!-- 크립토 섹션 -->
           <section class="card p-5 space-y-3 flex flex-col">
             <h2 class="section-title">크립토</h2>
             <div class="flex-grow space-y-3 flex flex-col">
@@ -484,6 +503,7 @@
         </div>
       </div>
 
+      <!-- 하단 여백 -->
       <div class="card p-5 text-center text-gray-400 mt-6 max-w-7xl mx-auto">
         실적 발표 캘린더 / Money Flow / 기타 위젯 자리 (준비 중)
       </div>
