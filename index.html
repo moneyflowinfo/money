@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Money Flow - 자산 시장 대시보드</title>
+  <title>자산 시장 대시보드</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
@@ -48,10 +48,6 @@
       border-radius: 12px;
       box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
-      min-height: 140px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
     }
 
     [data-theme="light"] .card {
@@ -89,14 +85,59 @@
     .positive { color: var(--positive); }
     .negative { color: var(--negative); }
 
-    .loading-spinner {
-      display: inline-block;
-      animation: spin 1s linear infinite;
+    .gauge-container {
+      position: relative;
+      width: 100%;
+      height: 120px;
+      overflow: hidden;
     }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+    .gauge-semi-circle {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 240px;
+      border-radius: 50% 50% 50% 50% / 100% 100% 0% 0%;
+      background: linear-gradient(to right, #ef4444, #f59e0b, #10b981);
+    }
+    .gauge-mask {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: calc(100% - 20px);
+      height: 220px;
+      background: var(--card-bg);
+      border-radius: 50% 50% 50% 50% / 100% 100% 0% 0%;
+    }
+    .gauge-needle {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 2px;
+      height: 50%;
+      background: var(--text-primary);
+      transform-origin: bottom center;
+      transition: transform 0.5s ease-in-out;
+    }
+    .gauge-center-point {
+      position: absolute;
+      bottom: -5px;
+      left: 50%;
+      width: 10px;
+      height: 10px;
+      background: var(--text-primary);
+      border-radius: 50%;
+      transform: translateX(-50%);
+    }
+    .gauge-labels {
+      display: flex;
+      justify-content: space-between;
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      padding: 0 10px;
+      font-size: 10px;
+      color: var(--text-secondary);
     }
   </style>
 </head>
@@ -105,15 +146,33 @@
   <!-- 상단 헤더 -->
   <header class="bg-gray-900/80 backdrop-blur-md border-b border-gray-800 sticky top-0 z-50 px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between h-24 max-w-7xl mx-auto">
+      <!-- Left Side: Title and Subtitle -->
       <div>
         <h1 class="text-3xl font-bold" style="color: var(--text-primary);">Money Flow 자산 흐름</h1>
         <p class="text-sm mt-1" style="color: var(--text-secondary);">
-          주요 자산 가격 및 시장 심리 지표 실시간 대시보드
-          <span id="update-time" class="ml-2 px-2 py-1 rounded-md text-xs bg-gray-800">업데이트 중...</span>
+          주요 자산들의 가격 현황 및 주요 지표
+          <span class="ml-2 px-2 py-1 rounded-md text-xs" style="background-color: var(--bg-secondary); color: var(--text-secondary);">Updated: 오후 12:06:24</span>
         </p>
       </div>
 
+      <!-- Right Side: Indicators & Theme Toggle -->
       <div class="flex items-center space-x-4">
+        <div class="card p-3 rounded-lg text-center hidden md:block" style="background-color: var(--card-bg);">
+          <div class="text-xs" style="color: var(--text-secondary);">$ 원/달러 환율</div>
+          <div class="text-lg font-bold" style="color: var(--text-primary);">1449.4원</div>
+        </div>
+        <div class="card p-3 rounded-lg text-center hidden md:block" style="background-color: var(--card-bg);">
+          <div class="text-xs" style="color: var(--text-secondary);">업비트 USDT</div>
+          <div class="text-lg font-bold" style="color: var(--text-primary);">₩1,477</div>
+        </div>
+        <div class="card p-3 rounded-lg text-center hidden md:block" style="background-color: var(--card-bg);">
+          <div class="text-xs" style="color: var(--text-secondary);">빗썸 USDT</div>
+          <div class="text-lg font-bold" style="color: var(--text-primary);">₩1,477</div>
+        </div>
+        <div class="card p-3 rounded-lg text-center hidden md:block" style="background-color: var(--card-bg);">
+          <div class="text-xs" style="color: var(--text-secondary);">김치프리미엄 (USDT)</div>
+          <div class="text-lg font-bold text-green-500">+1.88%</div>
+        </div>
         <button id="theme-toggle" class="p-2 rounded-lg hover:bg-gray-800 transition">
           <i id="theme-icon" class="fas fa-moon text-xl"></i>
         </button>
@@ -123,23 +182,23 @@
 
   <div class="flex flex-1 overflow-hidden">
 
-    <!-- 좌측 사이드바 (아이콘 완전 제거) -->
+    <!-- 좌측 사이드바 -->
     <aside class="sidebar w-64 flex-shrink-0 hidden md:block overflow-y-auto">
       <nav class="py-6 px-4 space-y-1">
         <a href="#" class="flex items-center px-4 py-3 rounded-lg bg-blue-600/20 text-blue-400">
-          대시보드
+          <i class="fas fa-home mr-3"></i> 대시보드
         </a>
         <a href="#commodities" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-800 transition">
-          원자재
+          <i class="fas fa-coins mr-3"></i> 원자재
         </a>
         <a href="#us-stocks" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-800 transition">
-          미국 주식
+          <i class="fas fa-chart-line mr-3"></i> 미국 주식
         </a>
         <a href="#korean-stocks" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-800 transition">
-          한국 주식
+          <i class="fas fa-building mr-3"></i> 한국 주식
         </a>
         <a href="#crypto" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-800 transition">
-          크립토
+          <i class="fab fa-bitcoin mr-3"></i> 크립토
         </a>
       </nav>
     </aside>
@@ -147,92 +206,208 @@
     <!-- 메인 콘텐츠 -->
     <main class="flex-1 overflow-y-auto p-4 md:p-6">
       <div class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
 
-        <!-- 상단 실시간 지표 바 -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
-          <div class="card p-4">
-            <div class="text-sm text-gray-400">원/달러 환율</div>
-            <div id="usdkrw-price" class="text-xl font-bold">로딩 중... <i class="fas fa-spinner fa-spin loading-spinner"></i></div>
-            <div id="usdkrw-change" class="text-sm"></div>
-          </div>
-          <div class="card p-4">
-            <div class="text-sm text-gray-400">김치 프리미엄</div>
-            <div id="kimp" class="text-xl font-bold text-green-400">로딩 중... <i class="fas fa-spinner fa-spin loading-spinner"></i></div>
-          </div>
+          <!-- 원자재 섹션 -->
+          <section class="card p-6 space-y-4 flex flex-col">
+            <h2 class="section-title">원자재</h2>
+            <div class="flex-grow space-y-4 flex flex-col">
+              <!-- 금 -->
+              <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
+                <div class="text-lg font-semibold">금 (GLD)</div>
+                <div class="mt-2">
+                  <div class="text-2xl font-bold">2,685.40</div>
+                  <div class="text-sm positive flex items-center justify-center space-x-2">
+                    <i class="fas fa-arrow-trend-up"></i>
+                    <span>+1.24% (+32.80)</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 은 -->
+              <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
+                <div class="text-lg font-semibold">은 (SLV)</div>
+                <div class="mt-2">
+                  <div class="text-2xl font-bold">31.85</div>
+                  <div class="text-sm positive flex items-center justify-center space-x-2">
+                    <i class="fas fa-arrow-trend-up"></i>
+                    <span>+2.15% (+0.67)</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 금 공포탐욕 지수 -->
+              <div class="card p-4">
+                <h3 class="text-lg font-semibold text-center mb-2">금 공포탐욕 지수</h3>
+                <div class="gauge-container">
+                  <div class="gauge-semi-circle"></div>
+                  <div class="gauge-mask"></div>
+                  <div class="gauge-needle" style="transform: translateX(-50%) rotate(calc(50 * 1.8deg - 90deg));"></div>
+                  <div class="gauge-center-point"></div>
+                  <div class="gauge-labels">
+                    <span>0</span>
+                    <span>100</span>
+                  </div>
+                </div>
+                <div class="text-center text-2xl font-bold mt-2">
+                  <div>50</div>
+                  <div class="text-base font-semibold">중립</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 미국 주식 섹션 -->
+          <section class="card p-6 space-y-4 flex flex-col">
+            <h2 class="section-title">미국 주식</h2>
+            <div class="flex-grow space-y-4 flex flex-col">
+              <!-- S&P500 -->
+              <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
+                <div class="text-lg font-semibold">S&P 500</div>
+                <div class="mt-2">
+                  <div class="text-2xl font-bold">5,842.01</div>
+                  <div class="text-sm negative flex items-center justify-center space-x-2">
+                    <i class="fas fa-arrow-trend-down"></i>
+                    <span>-0.38% (-22.31)</span>
+                  </div>
+                </div>
+              </div>
+              <!-- QQQ -->
+              <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
+                <div class="text-lg font-semibold">NASDAQ 100</div>
+                <div class="mt-2">
+                  <div class="text-2xl font-bold">498.75</div>
+                  <div class="text-sm negative flex items-center justify-center space-x-2">
+                    <i class="fas fa-arrow-trend-down"></i>
+                    <span>-0.62% (-3.10)</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 미국 주식 공포탐욕 지수 -->
+              <div class="card p-4">
+                <h3 class="text-lg font-semibold text-center mb-2">공포탐욕 지수</h3>
+                <div class="gauge-container">
+                  <div class="gauge-semi-circle"></div>
+                  <div class="gauge-mask"></div>
+                  <div class="gauge-needle" style="transform: translateX(-50%) rotate(calc(62 * 1.8deg - 90deg));"></div>
+                  <div class="gauge-center-point"></div>
+                  <div class="gauge-labels">
+                    <span>Extreme Fear</span>
+                    <span>Extreme Greed</span>
+                  </div>
+                </div>
+                <div class="text-center text-2xl font-bold mt-2">
+                  <div>62</div>
+                  <div class="text-base font-semibold">탐욕</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 한국 주식 섹션 -->
+          <section class="card p-6 space-y-4 flex flex-col">
+            <h2 class="section-title">한국 주식</h2>
+            <div class="flex-grow space-y-4 flex flex-col">
+              <!-- 코스피 -->
+              <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
+                <div class="text-lg font-semibold">코스피</div>
+                <div class="mt-2">
+                  <div class="text-2xl font-bold">2,612.45</div>
+                  <div class="text-sm positive flex items-center justify-center space-x-2">
+                    <i class="fas fa-arrow-trend-up"></i>
+                    <span>+0.85% (+22.10)</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 코스닥 -->
+              <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
+                <div class="text-lg font-semibold">코스닥</div>
+                <div class="mt-2">
+                  <div class="text-2xl font-bold">842.18</div>
+                  <div class="text-sm positive flex items-center justify-center space-x-2">
+                    <i class="fas fa-arrow-trend-up"></i>
+                    <span>+1.12% (+9.32)</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 한국 주식 공포탐욕 지수 -->
+              <div class="card p-4">
+                <h3 class="text-lg font-semibold text-center mb-2">공포탐욕 지수</h3>
+                <div class="gauge-container">
+                  <div class="gauge-semi-circle"></div>
+                  <div class="gauge-mask"></div>
+                  <div class="gauge-needle" style="transform: translateX(-50%) rotate(calc(79.9 * 1.8deg - 90deg));"></div>
+                  <div class="gauge-center-point"></div>
+                  <div class="gauge-labels">
+                    <span>V.Fear</span>
+                    <span>V.Greed</span>
+                  </div>
+                </div>
+                <div class="text-center text-2xl font-bold mt-2">
+                  <div>79.9</div>
+                  <div class="text-base font-semibold">극단적 탐욕</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 크립토 섹션 -->
+          <section class="card p-6 space-y-4 flex flex-col">
+            <h2 class="section-title">크립토</h2>
+            <div class="flex-grow space-y-4 flex flex-col">
+              <!-- 비트코인 -->
+              <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
+                <div class="text-lg font-semibold">비트코인</div>
+                <div class="mt-2">
+                  <div class="flex items-baseline justify-center space-x-4 flex-wrap">
+                    <div class="text-xl font-bold">$98,450</div>
+                    <div class="text-lg font-bold ml-2">₩135,245,000</div>
+                  </div>
+                  <div class="text-sm positive flex items-center justify-center space-x-2 mt-1">
+                    <i class="fas fa-arrow-trend-up"></i>
+                    <span>+2.45% (+$2,350)</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 이더리움 -->
+              <div class="card p-4 hover:shadow-lg transition text-center flex-grow flex flex-col justify-between">
+                <div class="text-lg font-semibold">이더리움</div>
+                <div class="mt-2">
+                  <div class="flex items-baseline justify-center space-x-4 flex-wrap">
+                    <div class="text-xl font-bold">$3,820</div>
+                    <div class="text-lg font-bold ml-2">₩5,145,000</div>
+                  </div>
+                  <div class="text-sm positive flex items-center justify-center space-x-2 mt-1">
+                    <i class="fas fa-arrow-trend-up"></i>
+                    <span>+1.88% (+$70)</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 공포탐욕 지수 -->
+              <div class="card p-4">
+                <h3 class="text-lg font-semibold text-center mb-2">크립토 공포탐욕 지수</h3>
+                <div class="gauge-container">
+                  <div class="gauge-semi-circle"></div>
+                  <div class="gauge-mask"></div>
+                  <div class="gauge-needle" style="transform: translateX(-50%) rotate(calc(74 * 1.8deg - 90deg));"></div>
+                  <div class="gauge-center-point"></div>
+                  <div class="gauge-labels">
+                    <span>Extreme Fear</span>
+                    <span>Extreme Greed</span>
+                  </div>
+                </div>
+                <div class="text-center text-2xl font-bold mt-2">
+                  <div>74</div>
+                  <div class="text-base font-semibold">탐욕</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
         </div>
+      </div>
 
-        <!-- 주요 지수 카드들 -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 mb-10">
-          <div class="card p-5">
-            <div class="text-lg font-semibold mb-2">금 (GLD)</div>
-            <div id="gld-price" class="text-2xl font-bold">로딩 중... <i class="fas fa-spinner fa-spin loading-spinner"></i></div>
-            <div id="gld-change" class="text-sm"></div>
-          </div>
-
-          <div class="card p-5">
-            <div class="text-lg font-semibold mb-2">은 (SLV)</div>
-            <div id="slv-price" class="text-2xl font-bold">로딩 중... <i class="fas fa-spinner fa-spin loading-spinner"></i></div>
-            <div id="slv-change" class="text-sm"></div>
-          </div>
-
-          <div class="card p-5">
-            <div class="text-lg font-semibold mb-2">S&P 500</div>
-            <div id="spx-price" class="text-2xl font-bold">로딩 중... <i class="fas fa-spinner fa-spin loading-spinner"></i></div>
-            <div id="spx-change" class="text-sm"></div>
-          </div>
-
-          <div class="card p-5">
-            <div class="text-lg font-semibold mb-2">QQQ</div>
-            <div id="qqq-price" class="text-2xl font-bold">로딩 중... <i class="fas fa-spinner fa-spin loading-spinner"></i></div>
-            <div id="qqq-change" class="text-sm"></div>
-          </div>
-
-          <div class="card p-5">
-            <div class="text-lg font-semibold mb-2">코스피</div>
-            <div id="kospi-price" class="text-2xl font-bold">로딩 중... <i class="fas fa-spinner fa-spin loading-spinner"></i></div>
-            <div id="kospi-change" class="text-sm"></div>
-          </div>
-
-          <div class="card p-5">
-            <div class="text-lg font-semibold mb-2">코스닥</div>
-            <div id="kosdaq-price" class="text-2xl font-bold">로딩 중... <i class="fas fa-spinner fa-spin loading-spinner"></i></div>
-            <div id="kosdaq-change" class="text-sm"></div>
-          </div>
-
-          <div class="card p-5">
-            <div class="text-lg font-semibold mb-2">비트코인 (BTC)</div>
-            <div id="btc-price" class="text-2xl font-bold">로딩 중... <i class="fas fa-spinner fa-spin loading-spinner"></i></div>
-            <div id="btc-change" class="text-sm"></div>
-          </div>
-
-          <div class="card p-5">
-            <div class="text-lg font-semibold mb-2">이더리움 (ETH)</div>
-            <div id="eth-price" class="text-2xl font-bold">로딩 중... <i class="fas fa-spinner fa-spin loading-spinner"></i></div>
-            <div id="eth-change" class="text-sm"></div>
-          </div>
-        </div>
-
-        <!-- 공포탐욕 지수 (아직 더미, 나중에 연동) -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <div class="card p-6">
-            <h3 class="section-title">미국 주식 공포탐욕</h3>
-            <div class="text-4xl font-bold text-center">62</div>
-            <div class="text-center mt-2 text-sm">탐욕 (Greed)</div>
-          </div>
-
-          <div class="card p-6">
-            <h3 class="section-title">한국 주식 공포탐욕</h3>
-            <div class="text-4xl font-bold text-center">79.9</div>
-            <div class="text-center mt-2 text-sm">극단적 탐욕</div>
-          </div>
-
-          <div class="card p-6">
-            <h3 class="section-title">크립토 공포탐욕</h3>
-            <div class="text-4xl font-bold text-center">74</div>
-            <div class="text-center mt-2 text-sm">탐욕</div>
-          </div>
-        </div>
-
+      <!-- 하단 여유 공간 -->
+      <div class="card p-6 text-center text-gray-400 mt-10 max-w-7xl mx-auto">
+        실적 발표 캘린더 / Money Flow / 기타 위젯 자리 (준비 중)
       </div>
     </main>
   </div>
@@ -255,71 +430,11 @@
       }
     });
 
+    // 초기 상태 아이콘 설정
     if (html.getAttribute('data-theme') === 'light') {
       icon.classList.remove('fa-moon');
       icon.classList.add('fa-sun');
     }
-  </script>
-
-  <!-- 실제 가격 데이터 연동 스크립트 -->
-  <script>
-    const apiKey = 'd61e1n9r01quq5pfv0qgd61e1n9r01quq5pfv0r0'; // ← 여기 본인 키 넣기!
-
-    // 종목 티커 매핑 (Finnhub 정확한 형식)
-    const assets = {
-      USDKRW: 'USDKRW',
-      GLD: 'AMEX:GLD',
-      SLV: 'AMEX:SLV',
-      SPX: 'SPX',
-      QQQ: 'NASDAQ:QQQ',
-      KOSPI: 'KS11',
-      KOSDAQ: 'KQ11',
-      BTC: 'BINANCE:BTCUSDT',
-      ETH: 'BINANCE:ETHUSDT'
-    };
-
-    // 가격 불러오기 함수
-    async function fetchPrice(symbol, delay = 0) {
-      if (delay > 0) await new Promise(r => setTimeout(r, delay));
-      try {
-        const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${apiKey}`);
-        if (!res.ok) return { price: 'N/A', change: '-' };
-        const data = await res.json();
-        if (data.c == 0 || !data.c) return { price: 'N/A', change: '-' };
-        const changePct = ((data.c - data.pc) / data.pc * 100).toFixed(2);
-        const colorClass = changePct >= 0 ? 'positive' : 'negative';
-        return {
-          price: data.c.toLocaleString(),
-          change: `<span class="${colorClass}">${changePct >= 0 ? '+' : ''}${changePct}%</span>`
-        };
-      } catch (e) {
-        return { price: '오류', change: '-' };
-      }
-    }
-
-    // 가격 업데이트 (순차 호출 + 2초 간격)
-    async function updatePrices() {
-      document.getElementById('update-time').textContent = '업데이트 중...';
-
-      const keys = Object.keys(assets);
-      for (let i = 0; i < keys.length; i++) {
-        const key = keys[i];
-        const symbol = assets[key];
-        const data = await fetchPrice(symbol, i * 2000); // 2초 간격
-
-        const priceEl = document.getElementById(`${key.toLowerCase()}-price`);
-        const changeEl = document.getElementById(`${key.toLowerCase()}-change`);
-
-        if (priceEl) priceEl.textContent = data.price || 'N/A';
-        if (changeEl) changeEl.innerHTML = data.change || '-';
-      }
-
-      document.getElementById('update-time').textContent = `최종 업데이트: ${new Date().toLocaleTimeString('ko-KR')}`;
-    }
-
-    // 페이지 열릴 때 바로 실행 + 120초(2분)마다 갱신
-    updatePrices();
-    setInterval(updatePrices, 120000);
   </script>
 
 </body>
