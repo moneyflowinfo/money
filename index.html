@@ -140,7 +140,6 @@
       color: var(--text-secondary);
     }
 
-    /* 레이아웃 안정화 */
     .card {
       min-height: 120px;
       display: flex;
@@ -163,7 +162,6 @@
       max-width: 100%;
     }
 
-    /* 헤더 & 지표 카드 - 가독성 향상 버전 */
     header {
       padding: 0.5rem 1rem;
     }
@@ -458,25 +456,28 @@
           <section class="card p-5 space-y-3 flex flex-col">
             <h2 class="section-title">크립토</h2>
             <div class="flex-grow space-y-3 flex flex-col">
+              <!-- 비트코인 -->
               <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
                 <div class="text-base font-semibold">비트코인</div>
                 <div class="mt-1">
-                  <div class="flex items-baseline justify-center space-x-2 flex-wrap number-container">
+                  <div class="flex items-baseline justify-center space-x-2 flex-wrap number-container" id="btc-price">
                     <div class="text-lg font-bold">$98,450</div>
-                    <div class="text-base font-bold">₩135,245,000</div>
+                    <div class="text-base font-bold ml-2">₩135,245,000</div>
                   </div>
-                  <div class="text-xs positive flex justify-center items-center space-x-1 mt-1">
+                  <div class="text-xs positive flex justify-center items-center space-x-1 mt-1" id="btc-change">
                     <i class="fas fa-arrow-trend-up"></i>
-                    <span>+2.45% (+$2,350)</span>
+                    <span>+2.45%</span>
                   </div>
                 </div>
               </div>
+
+              <!-- 이더리움 (아직 하드코딩 상태) -->
               <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
                 <div class="text-base font-semibold">이더리움</div>
                 <div class="mt-1">
                   <div class="flex items-baseline justify-center space-x-2 flex-wrap number-container">
                     <div class="text-lg font-bold">$3,820</div>
-                    <div class="text-base font-bold">₩5,145,000</div>
+                    <div class="text-base font-bold ml-2">₩5,145,000</div>
                   </div>
                   <div class="text-xs positive flex justify-center items-center space-x-1 mt-1">
                     <i class="fas fa-arrow-trend-up"></i>
@@ -484,6 +485,7 @@
                   </div>
                 </div>
               </div>
+
               <div class="card p-3">
                 <h3 class="text-base font-semibold text-center mb-1">공포 탐욕 지수</h3>
                 <div class="gauge-container">
@@ -505,15 +507,15 @@
         </div>
       </div>
 
-      <!-- 하단 여백 -->
       <div class="card p-5 text-center text-gray-400 mt-6 max-w-7xl mx-auto">
         실적 발표 캘린더 / Money Flow / 기타 위젯 자리 (준비 중)
       </div>
     </main>
   </div>
 
-  <!-- 테마 토글 스크립트 -->
+  <!-- 테마 토글 + 데이터 업데이트 스크립트 -->
   <script>
+    // 테마 토글
     const toggleBtn = document.getElementById('theme-toggle');
     const icon = document.getElementById('theme-icon');
     const html = document.documentElement;
@@ -534,6 +536,53 @@
       icon.classList.remove('fa-moon');
       icon.classList.add('fa-sun');
     }
+
+    // 비트코인 데이터 업데이트 함수
+    function updateBitcoinPrice() {
+      fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,krw&include_24hr_change=true')
+        .then(response => response.json())
+        .then(data => {
+          const btc = data.bitcoin;
+          if (!btc) return;
+
+          // USD 가격 (쉼표 포함)
+          const usdPrice = btc.usd.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+          // KRW 가격 (소수점 버림 + 쉼표)
+          const krwPrice = Math.floor(btc.krw).toLocaleString('ko-KR');
+          // 24시간 변동률
+          const change24h = btc.usd_24h_change.toFixed(2);
+          const isPositive = change24h >= 0;
+
+          // 가격 업데이트
+          const priceContainer = document.getElementById('btc-price');
+          if (priceContainer) {
+            priceContainer.innerHTML = `
+              <div class="text-lg font-bold">$${usdPrice}</div>
+              <div class="text-base font-bold ml-2">₩${krwPrice}</div>
+            `;
+          }
+
+          // 변동률 업데이트
+          const changeContainer = document.getElementById('btc-change');
+          if (changeContainer) {
+            changeContainer.className = `text-xs flex justify-center items-center space-x-1 mt-1 ${isPositive ? 'positive' : 'negative'}`;
+            changeContainer.innerHTML = `
+              <i class="fas fa-arrow-trend-${isPositive ? 'up' : 'down'}"></i>
+              <span>${isPositive ? '+' : ''}${change24h}%</span>
+            `;
+          }
+        })
+        .catch(error => {
+          console.error('비트코인 데이터 업데이트 실패:', error);
+          // 실패 시 기존 값 유지 (또는 "오류" 표시 가능)
+        });
+    }
+
+    // 페이지 로드 시 바로 한 번 실행
+    updateBitcoinPrice();
+
+    // 1분(60초)마다 자동 업데이트
+    setInterval(updateBitcoinPrice, 60 * 1000);
   </script>
 
 </body>
