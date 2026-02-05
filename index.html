@@ -546,9 +546,6 @@
       return { text: '극단적 탐욕', color: 'text-emerald-500' };
     }
 
-    // CoinMarketCap API 키
-    const CMC_API_KEY = 'e91c9920caf0426db888688a7f29f85d';
-
     // 모든 데이터 업데이트 함수
     async function updateAllData() {
       try {
@@ -652,27 +649,17 @@
           kimchiEl.className = `value ${pos ? 'positive' : 'negative'}`;
         }
 
-        // 6. CoinMarketCap 공포탐욕 지수
-        console.log('공포탐욕 API 호출 시도...');
-        const fngRes = await fetch('https://pro-api.coinmarketcap.com/v3/fear-and-greed/latest', {
-          headers: {
-            'X-CMC_PRO_API_KEY': CMC_API_KEY,
-            'Accept': 'application/json'
-          }
-        });
-
-        console.log('API 응답 상태:', fngRes.status, fngRes.statusText);
-
+        // 6. Alternative.me 공포탐욕 지수
+        const fngRes = await fetch('https://api.alternative.me/fng/?limit=1');
         if (!fngRes.ok) {
-          throw new Error(`CoinMarketCap API 오류: ${fngRes.status} ${fngRes.statusText}`);
+          throw new Error(`Alternative.me API 오류: ${fngRes.status}`);
         }
 
         const fngData = await fngRes.json();
-        console.log('CoinMarketCap 전체 응답:', fngData);
 
-        if (fngData?.data?.value != null) {
-          const value = parseInt(fngData.data.value, 10);
-          console.log('공포탐욕 값:', value);
+        if (fngData?.data?.length > 0) {
+          const fng = fngData.data[0];
+          const value = parseInt(fng.value, 10);
 
           document.getElementById('fng-value').textContent = value;
 
@@ -683,9 +670,7 @@
 
           const rotation = value * 1.8 - 90;
           document.getElementById('fng-needle').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
-          console.log('게이지 업데이트 완료');
         } else {
-          console.warn('value 필드가 응답에 없음:', fngData);
           document.getElementById('fng-value').textContent = '—';
           document.getElementById('fng-class').textContent = '데이터 없음';
         }
