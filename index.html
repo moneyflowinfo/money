@@ -468,8 +468,8 @@
       return { text: '극단적 탐욕', color: 'text-emerald-500' };
     }
 
-    // Alpha Vantage API 키
-    const ALPHA_KEY = 'BO7EOYLBLJMIMZRO';
+    // Finnhub API 키
+    const FINNHUB_KEY = 'd61e1n9r01quq5pfv0qgd61e1n9r01quq5pfv0r0';
 
     // 모든 데이터 업데이트 함수
     async function updateAllData() {
@@ -592,41 +592,63 @@
           document.getElementById('fng-needle-crypto').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
         }
 
-        // 7. 미국 주식 - Alpha Vantage (당신의 키 적용)
-        // S&P 500 → SPY ETF
-        const sp500Target = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=SPY&apikey=${ALPHA_KEY}`;
-        const sp500Res = await fetch(proxy + encodeURIComponent(sp500Target));
-        const sp500Data = await sp500Res.json();
+        // 7. 미국 주식 - Finnhub API
+        // SPY (S&P 500 대체)
+        const sp500Url = `https://finnhub.io/api/v1/quote?symbol=SPY&token=${FINNHUB_KEY}`;
+        try {
+          const spRes = await fetch(proxy + encodeURIComponent(sp500Url));
+          if (!spRes.ok) throw new Error(`SPY HTTP error! status: ${spRes.status}`);
+          const spData = await spRes.json();
 
-        if (sp500Data['Global Quote']) {
-          const quote = sp500Data['Global Quote'];
-          const price = parseFloat(quote['05. price']).toLocaleString('en-US', { minimumFractionDigits: 2 });
-          const changePct = parseFloat(quote['10. change percent'].replace('%', '')).toFixed(2);
-          const change = parseFloat(quote['09. change']).toFixed(2);
-          const pos = parseFloat(quote['09. change']) >= 0;
+          if (spData.c && spData.c > 0) {
+            const price = spData.c.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const prevClose = spData.pc;
+            const change = (spData.c - prevClose).toFixed(2);
+            const changePct = ((spData.c - prevClose) / prevClose * 100).toFixed(2);
+            const pos = (spData.c - prevClose) >= 0;
 
-          document.getElementById('sp500-price').textContent = price;
-          const el = document.getElementById('sp500-change');
-          el.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
-          el.className = `text-xs flex justify-center items-center ${pos ? 'positive' : 'negative'}`;
+            document.getElementById('sp500-price').textContent = price;
+            const spEl = document.getElementById('sp500-change');
+            spEl.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
+            spEl.className = `text-xs flex justify-center items-center ${pos ? 'positive' : 'negative'}`;
+          } else {
+            document.getElementById('sp500-price').textContent = '—';
+            document.getElementById('sp500-change').textContent = '장마감/데이터 없음';
+            console.log('Finnhub SPY 데이터 부족:', spData);
+          }
+        } catch (err) {
+          console.error('Finnhub SPY fetch 오류:', err);
+          document.getElementById('sp500-price').textContent = '—';
+          document.getElementById('sp500-change').textContent = '오류';
         }
 
-        // NASDAQ 100 → QQQ ETF
-        const ndxTarget = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=QQQ&apikey=${ALPHA_KEY}`;
-        const ndxRes = await fetch(proxy + encodeURIComponent(ndxTarget));
-        const ndxData = await ndxRes.json();
+        // QQQ (NASDAQ 100 대체)
+        const ndxUrl = `https://finnhub.io/api/v1/quote?symbol=QQQ&token=${FINNHUB_KEY}`;
+        try {
+          const ndxRes = await fetch(proxy + encodeURIComponent(ndxUrl));
+          if (!ndxRes.ok) throw new Error(`QQQ HTTP error! status: ${ndxRes.status}`);
+          const ndxData = await ndxRes.json();
 
-        if (ndxData['Global Quote']) {
-          const quote = ndxData['Global Quote'];
-          const price = parseFloat(quote['05. price']).toLocaleString('en-US', { minimumFractionDigits: 2 });
-          const changePct = parseFloat(quote['10. change percent'].replace('%', '')).toFixed(2);
-          const change = parseFloat(quote['09. change']).toFixed(2);
-          const pos = parseFloat(quote['09. change']) >= 0;
+          if (ndxData.c && ndxData.c > 0) {
+            const price = ndxData.c.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const prevClose = ndxData.pc;
+            const change = (ndxData.c - prevClose).toFixed(2);
+            const changePct = ((ndxData.c - prevClose) / prevClose * 100).toFixed(2);
+            const pos = (ndxData.c - prevClose) >= 0;
 
-          document.getElementById('ndx-price').textContent = price;
-          const el = document.getElementById('ndx-change');
-          el.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
-          el.className = `text-xs flex justify-center items-center ${pos ? 'positive' : 'negative'}`;
+            document.getElementById('ndx-price').textContent = price;
+            const ndxEl = document.getElementById('ndx-change');
+            ndxEl.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
+            ndxEl.className = `text-xs flex justify-center items-center ${pos ? 'positive' : 'negative'}`;
+          } else {
+            document.getElementById('ndx-price').textContent = '—';
+            document.getElementById('ndx-change').textContent = '장마감/데이터 없음';
+            console.log('Finnhub QQQ 데이터 부족:', ndxData);
+          }
+        } catch (err) {
+          console.error('Finnhub QQQ fetch 오류:', err);
+          document.getElementById('ndx-price').textContent = '—';
+          document.getElementById('ndx-change').textContent = '오류';
         }
 
       } catch (err) {
@@ -635,7 +657,7 @@
     }
 
     updateAllData();
-    setInterval(updateAllData, 60 * 1000);
+    setInterval(updateAllData, 60 * 1000);  // 1분마다 갱신 (필요시 300000으로 늘려서 5분마다)
   </script>
 
 </body>
