@@ -7,7 +7,6 @@
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    /* 기존 스타일 그대로 유지 */
     :root {
       --bg-primary: #0f172a;
       --bg-secondary: #1e293b;
@@ -446,7 +445,7 @@
 
   <!-- 스크립트 -->
   <script>
-    // 테마 토글 (그대로 유지)
+    // 테마 토글
     const toggleBtn = document.getElementById('theme-toggle');
     const icon = document.getElementById('theme-icon');
     const html = document.documentElement;
@@ -468,7 +467,7 @@
       icon.classList.add('fa-sun');
     }
 
-    // 공포탐욕 지수 한글 매핑 함수 (그대로 유지)
+    // 공포탐욕 지수 한글 매핑 함수
     function getKoreanClassification(value) {
       value = parseInt(value, 10);
       if (isNaN(value)) return { text: '오류', color: 'text-gray-500' };
@@ -479,24 +478,21 @@
       return { text: '극단적 탐욕', color: 'text-emerald-500' };
     }
 
-    // Finnhub API 키 (더 이상 사용 안 함 - Alpha Vantage로 대체)
-    // const FINNHUB_KEY = 'd61e1n9r01quq5pfv0qgd61e1n9r01quq5pfv0r0';
-
-    // Vercel API 프록시 URL (여기서 바꿈)
+    // Vercel API 프록시 기본 URL
     const VERCEL_BASE = 'https://nextjs-boilerplate-pi-six-18.vercel.app/api';
 
-    // 모든 데이터 업데이트 함수 (Vercel 프록시로 변경)
+    // 모든 데이터 업데이트 함수
     async function updateAllData() {
       try {
-        // 1. 환율 (Frankfurter.app 사용 - 프록시로 변경 가능)
-        const fxRes = await fetch(`${VERCEL_BASE}/forex/usd-krw`); // 필요하면 별도 프록시 추가
+        // 1. 환율 (Frankfurter.app - 무료, 간단)
+        const fxRes = await fetch('https://api.frankfurter.app/latest?from=USD&to=KRW');
         const fxData = await fxRes.json();
         if (fxData?.rates?.KRW) {
           document.getElementById('usdkrw-value').textContent = `${fxData.rates.KRW.toFixed(1)}원`;
           document.getElementById('usdkrw-change').textContent = '실시간';
         }
 
-        // 2. CoinGecko BTC + ETH
+        // 2. CoinGecko BTC + ETH (Vercel 프록시)
         const cgRes = await fetch(`${VERCEL_BASE}/coingecko`);
         const cgData = await cgRes.json();
 
@@ -532,7 +528,7 @@
           ethChgEl.innerHTML = `<i class="fas fa-arrow-trend-${pos ? 'up' : 'down'}"></i><span>${pos ? '+' : ''}${chg}%</span>`;
         }
 
-        // 3. 업비트 (CORS 문제 있으면 Vercel 프록시로 변경 가능)
+        // 3. 업비트 (직접 호출 - CORS 문제 있으면 Vercel 프록시로 변경)
         const upRes = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC,KRW-USDT');
         const upData = await upRes.json();
 
@@ -559,7 +555,7 @@
           upChgEl.className = `change ${pos ? 'positive' : 'negative'}`;
         }
 
-        // 4. 빗썸 USDT (CORS 문제 있으면 Vercel 프록시로 변경 가능)
+        // 4. 빗썸 USDT (직접 호출)
         const bhRes = await fetch('https://api.bithumb.com/public/ticker/USDT_KRW');
         const bhData = await bhRes.json();
         if (bhData.status === '0000') {
@@ -574,12 +570,20 @@
           bhChgEl.className = `change ${pos ? 'positive' : 'negative'}`;
         }
 
-        // 5. 김치프리미엄 (upBtcKrw + cgData.bitcoin + fxData.usd.krw 사용)
-        // fxData는 임시로 생략 또는 별도 API 추가 필요
-        // 현재 코드에서는 fxData가 없으므로 임시로 생략
-        // 필요하면 /api/forex/usd-krw 프록시 추가
+        // 5. 김치프리미엄 (upBtcKrw + cgData.bitcoin + 환율 사용)
+        // 환율은 fxData.rates.KRW 사용 (위 환율 fetch에서 가져옴)
+        if (upBtcKrw && cgData.bitcoin && fxData?.rates?.KRW) {
+          const globalBtcKrw = cgData.bitcoin.usd * fxData.rates.KRW;
+          const premium = ((upBtcKrw / globalBtcKrw) - 1) * 100;
+          const premiumStr = premium.toFixed(2);
+          const pos = premium >= 0;
 
-        // 6. 크립토 공포탐욕 지수 (Vercel 프록시 사용)
+          const kimchiEl = document.getElementById('kimchi-premium');
+          kimchiEl.textContent = `${pos ? '+' : ''}${premiumStr}%`;
+          kimchiEl.className = `value ${pos ? 'positive' : 'negative'}`;
+        }
+
+        // 6. 크립토 공포탐욕 지수 (Vercel 프록시)
         const fngRes = await fetch(`${VERCEL_BASE}/fear-greed`);
         const fngData = await fngRes.json();
 
@@ -594,7 +598,7 @@
           document.getElementById('fng-needle-crypto').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
         }
 
-        // 7. 미국 주식 - Alpha Vantage (Vercel 프록시 사용)
+        // 7. 미국 주식 - Alpha Vantage (Vercel 프록시)
         const spRes = await fetch(`${VERCEL_BASE}/quote?symbol=SPY`);
         const spData = await spRes.json();
 
@@ -621,11 +625,8 @@
           ndxEl.className = `text-xs flex justify-center items-center ${pos ? 'positive' : 'negative'}`;
         }
 
-        // 8. 미국 주식 공포탐욕 지수 (CNN → Vercel 프록시로 변경 필요, 현재는 생략)
-        // 필요하면 /api/fear-greed/cnn 프록시 추가
-
-        // 9~11. 한국 주식 - 네이버 scraping (CORS 문제 있으면 Vercel 프록시 추가)
-        // 현재는 그대로 유지 (CORS 우회 필요 시 /api/naver?code=122630 프록시 추가)
+        // 8~11. 나머지 부분 (CNN, Naver) - 현재 그대로 유지
+        // 필요하면 추가 프록시 (/api/cnn-fng, /api/naver 등) 만들어줄게
 
       } catch (err) {
         console.error('데이터 업데이트 오류:', err);
