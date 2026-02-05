@@ -190,34 +190,6 @@
       white-space: nowrap;
     }
 
-    .indicator-card .label {
-      font-size: 0.62rem;
-      line-height: 1.05;
-      opacity: 0.8;
-      margin-bottom: 0.12rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .indicator-card .value {
-      font-size: 1.05rem;
-      font-weight: 700;
-      line-height: 1.15;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .indicator-card .change {
-      font-size: 0.68rem;
-      line-height: 1.1;
-      margin-top: 0.08rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
     @media (max-width: 1024px) {
       .header-container {
         flex-wrap: wrap;
@@ -496,10 +468,12 @@
       return { text: '극단적 탐욕', color: 'text-emerald-500' };
     }
 
+    // Alpha Vantage API 키
+    const ALPHA_KEY = 'BO7EOYLBLJMIMZRO';
+
     // 모든 데이터 업데이트 함수
     async function updateAllData() {
       try {
-        // 프록시 기본 경로
         const proxy = '/api/proxy?url=';
 
         // 1. 환율
@@ -548,7 +522,7 @@
           ethChgEl.innerHTML = `<i class="fas fa-arrow-trend-${pos ? 'up' : 'down'}"></i><span>${pos ? '+' : ''}${chg}%</span>`;
         }
 
-        // 3. 업비트 BTC-KRW + USDT (한국 API라 프록시 없이도 잘 됨)
+        // 3. 업비트
         const upRes = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC,KRW-USDT');
         const upData = await upRes.json();
 
@@ -575,7 +549,7 @@
           upChgEl.className = `change ${pos ? 'positive' : 'negative'}`;
         }
 
-        // 4. 빗썸 USDT-KRW
+        // 4. 빗썸 USDT
         const bhRes = await fetch('https://api.bithumb.com/public/ticker/USDT_KRW');
         const bhData = await bhRes.json();
         if (bhData.status === '0000') {
@@ -590,7 +564,7 @@
           bhChgEl.className = `change ${pos ? 'positive' : 'negative'}`;
         }
 
-        // 5. 김치프리미엄 (BTC 기준)
+        // 5. 김치프리미엄
         if (upBtcKrw && cgData.bitcoin && fxData?.usd?.krw) {
           const globalBtcKrw = cgData.bitcoin.usd * fxData.usd.krw;
           const premium = ((upBtcKrw / globalBtcKrw) - 1) * 100;
@@ -602,7 +576,7 @@
           kimchiEl.className = `value ${pos ? 'positive' : 'negative'}`;
         }
 
-        // 6. Alternative.me 공포탐욕 지수 → 크립토 섹션
+        // 6. 공포탐욕 지수 (Alternative.me) - 크립토 섹션
         const fngTarget = 'https://api.alternative.me/fng/?limit=1';
         const fngRes = await fetch(proxy + encodeURIComponent(fngTarget));
         const fngData = await fngRes.json();
@@ -618,47 +592,49 @@
           document.getElementById('fng-needle-crypto').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
         }
 
-        // 7. 미국 주식 - Yahoo Finance
-        const yahooTarget = 'https://query1.finance.yahoo.com/v7/finance/quote?symbols=^GSPC,^NDX';
-        const yahooRes = await fetch(proxy + encodeURIComponent(yahooTarget));
-        const yahooData = await yahooRes.json();
-        const quotes = yahooData.quoteResponse?.result || [];
+        // 7. 미국 주식 - Alpha Vantage (당신의 키 적용)
+        // S&P 500 → SPY ETF
+        const sp500Target = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=SPY&apikey=${ALPHA_KEY}`;
+        const sp500Res = await fetch(proxy + encodeURIComponent(sp500Target));
+        const sp500Data = await sp500Res.json();
 
-        quotes.forEach(quote => {
-          if (quote.symbol === '^GSPC') {
-            const price = quote.regularMarketPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            const changePct = quote.regularMarketChangePercent.toFixed(2);
-            const change = quote.regularMarketChange.toFixed(2);
-            const pos = quote.regularMarketChange >= 0;
+        if (sp500Data['Global Quote']) {
+          const quote = sp500Data['Global Quote'];
+          const price = parseFloat(quote['05. price']).toLocaleString('en-US', { minimumFractionDigits: 2 });
+          const changePct = parseFloat(quote['10. change percent'].replace('%', '')).toFixed(2);
+          const change = parseFloat(quote['09. change']).toFixed(2);
+          const pos = parseFloat(quote['09. change']) >= 0;
 
-            document.getElementById('sp500-price').textContent = price;
-            const spChgEl = document.getElementById('sp500-change');
-            spChgEl.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
-            spChgEl.className = `text-xs flex justify-center items-center ${pos ? 'positive' : 'negative'}`;
-          }
+          document.getElementById('sp500-price').textContent = price;
+          const el = document.getElementById('sp500-change');
+          el.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
+          el.className = `text-xs flex justify-center items-center ${pos ? 'positive' : 'negative'}`;
+        }
 
-          if (quote.symbol === '^NDX') {
-            const price = quote.regularMarketPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            const changePct = quote.regularMarketChangePercent.toFixed(2);
-            const change = quote.regularMarketChange.toFixed(2);
-            const pos = quote.regularMarketChange >= 0;
+        // NASDAQ 100 → QQQ ETF
+        const ndxTarget = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=QQQ&apikey=${ALPHA_KEY}`;
+        const ndxRes = await fetch(proxy + encodeURIComponent(ndxTarget));
+        const ndxData = await ndxRes.json();
 
-            document.getElementById('ndx-price').textContent = price;
-            const ndxChgEl = document.getElementById('ndx-change');
-            ndxChgEl.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
-            ndxChgEl.className = `text-xs flex justify-center items-center ${pos ? 'positive' : 'negative'}`;
-          }
-        });
+        if (ndxData['Global Quote']) {
+          const quote = ndxData['Global Quote'];
+          const price = parseFloat(quote['05. price']).toLocaleString('en-US', { minimumFractionDigits: 2 });
+          const changePct = parseFloat(quote['10. change percent'].replace('%', '')).toFixed(2);
+          const change = parseFloat(quote['09. change']).toFixed(2);
+          const pos = parseFloat(quote['09. change']) >= 0;
+
+          document.getElementById('ndx-price').textContent = price;
+          const el = document.getElementById('ndx-change');
+          el.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
+          el.className = `text-xs flex justify-center items-center ${pos ? 'positive' : 'negative'}`;
+        }
 
       } catch (err) {
         console.error('데이터 업데이트 오류:', err);
       }
     }
 
-    // 페이지 로드 시 즉시 실행
     updateAllData();
-
-    // 1분마다 업데이트
     setInterval(updateAllData, 60 * 1000);
   </script>
 
