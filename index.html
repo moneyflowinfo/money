@@ -283,26 +283,31 @@
               <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
                 <div class="text-base font-semibold">금 (GLD)</div>
                 <div class="mt-1">
-                  <div class="text-xl font-bold">2,685.40</div>
-                  <div class="text-xs positive flex justify-center items-center space-x-1">
-                    <i class="fas fa-arrow-trend-up"></i>
-                    <span>+1.24% (+32.80)</span>
-                  </div>
+                  <div class="text-xl font-bold" id="gold-price">—</div>
+                  <div class="text-xs" id="gold-change">—</div>
                 </div>
               </div>
               <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
                 <div class="text-base font-semibold">은 (SLV)</div>
                 <div class="mt-1">
-                  <div class="text-xl font-bold">31.85</div>
-                  <div class="text-xs positive flex justify-center items-center space-x-1">
-                    <i class="fas fa-arrow-trend-up"></i>
-                    <span>+2.15% (+0.67)</span>
-                  </div>
+                  <div class="text-xl font-bold" id="silver-price">—</div>
+                  <div class="text-xs" id="silver-change">—</div>
                 </div>
               </div>
-              <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
-                <div class="text-base font-semibold">공포 탐욕 지수</div>
-                <div class="mt-4 text-gray-500 text-sm">크립토 섹션 참조</div>
+              <div class="card p-3">
+                <h3 class="text-base font-semibold text-center mb-1">공포 탐욕 지수 (금 관련)</h3>
+                <div class="gauge-container">
+                  <div class="gauge-semi-circle"></div>
+                  <div class="gauge-mask"></div>
+                  <div class="gauge-needle" id="fng-needle-commodities" style="transform: translateX(-50%) rotate(0deg);"></div>
+                  <div class="gauge-center-point"></div>
+                  <div class="gauge-labels">
+                    <span>Extreme Fear</span>
+                    <span>Extreme Greed</span>
+                  </div>
+                </div>
+                <div class="text-center text-xl font-bold mt-1" id="fng-value-commodities">—</div>
+                <div class="text-xs text-center" id="fng-class-commodities">—</div>
               </div>
             </div>
           </section>
@@ -576,7 +581,7 @@
           kimchiEl.className = `value ${pos ? 'positive' : 'negative'}`;
         }
 
-        // 6. 크립토 공포탐욕 지수 (Alternative.me)
+        // 6. 크립토 공포탐욕 지수
         const fngTarget = 'https://api.alternative.me/fng/?limit=1';
         const fngRes = await fetch(proxy + encodeURIComponent(fngTarget));
         const fngData = await fngRes.json();
@@ -592,8 +597,7 @@
           document.getElementById('fng-needle-crypto').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
         }
 
-        // 7. 미국 주식 - Finnhub (SPY, QQQ)
-        // SPY
+        // 7. 미국 주식 - Finnhub
         const sp500Url = `https://finnhub.io/api/v1/quote?symbol=SPY&token=${FINNHUB_KEY}`;
         try {
           const spRes = await fetch(proxy + encodeURIComponent(sp500Url));
@@ -621,7 +625,6 @@
           document.getElementById('sp500-change').textContent = '오류';
         }
 
-        // QQQ
         const ndxUrl = `https://finnhub.io/api/v1/quote?symbol=QQQ&token=${FINNHUB_KEY}`;
         try {
           const ndxRes = await fetch(proxy + encodeURIComponent(ndxUrl));
@@ -649,26 +652,26 @@
           document.getElementById('ndx-change').textContent = '오류';
         }
 
-        // 8. 미국 주식 공포탐욕 지수 (CNN) - proxy 없이 직접 호출
+        // 8. 미국 주식 공포탐욕 지수 (CNN)
+        let cnnValue = null;
         const cnnFngUrl = 'https://production.dataviz.cnn.io/index/fearandgreed/graphdata';
         try {
           const cnnRes = await fetch(cnnFngUrl);
           if (!cnnRes.ok) throw new Error(`CNN HTTP ${cnnRes.status}`);
           const cnnData = await cnnRes.json();
 
-          let value;
           if (cnnData?.fear_and_greed?.score) {
-            value = Math.round(cnnData.fear_and_greed.score);
+            cnnValue = Math.round(cnnData.fear_and_greed.score);
           } else if (cnnData?.fear_and_greed?.historical?.data?.length > 0) {
             const latest = cnnData.fear_and_greed.historical.data[0];
-            value = Math.round(latest.y || latest.score);
+            cnnValue = Math.round(latest.y || latest.score);
           }
 
-          if (value !== undefined && !isNaN(value)) {
-            const cls = getKoreanClassification(value);
-            const rotation = value * 1.8 - 90;
+          if (cnnValue !== null && !isNaN(cnnValue)) {
+            const cls = getKoreanClassification(cnnValue);
+            const rotation = cnnValue * 1.8 - 90;
 
-            document.getElementById('fng-value-us').textContent = value;
+            document.getElementById('fng-value-us').textContent = cnnValue;
             document.getElementById('fng-class-us').textContent = cls.text;
             document.getElementById('fng-class-us').className = `text-xs text-center ${cls.color}`;
             document.getElementById('fng-needle-us').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
@@ -682,14 +685,84 @@
           document.getElementById('fng-class-us').textContent = '오류';
         }
 
+        // 9. 원자재 가격 - Finnhub (GLD, SLV)
+        // 금 (GLD)
+        const goldUrl = `https://finnhub.io/api/v1/quote?symbol=GLD&token=${FINNHUB_KEY}`;
+        try {
+          const goldRes = await fetch(proxy + encodeURIComponent(goldUrl));
+          if (!goldRes.ok) throw new Error(`GLD HTTP ${goldRes.status}`);
+          const goldData = await goldRes.json();
+
+          if (goldData.c && goldData.c > 0) {
+            const price = goldData.c.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const prevClose = goldData.pc;
+            const change = (goldData.c - prevClose).toFixed(2);
+            const changePct = ((goldData.c - prevClose) / prevClose * 100).toFixed(2);
+            const pos = (goldData.c - prevClose) >= 0;
+
+            document.getElementById('gold-price').textContent = price;
+            const goldEl = document.getElementById('gold-change');
+            goldEl.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
+            goldEl.className = `text-xs flex justify-center items-center ${pos ? 'positive' : 'negative'}`;
+          } else {
+            document.getElementById('gold-price').textContent = '—';
+            document.getElementById('gold-change').textContent = '장마감/데이터 없음';
+          }
+        } catch (err) {
+          console.error('Finnhub GLD 오류:', err);
+          document.getElementById('gold-price').textContent = '—';
+          document.getElementById('gold-change').textContent = '오류';
+        }
+
+        // 은 (SLV)
+        const silverUrl = `https://finnhub.io/api/v1/quote?symbol=SLV&token=${FINNHUB_KEY}`;
+        try {
+          const silverRes = await fetch(proxy + encodeURIComponent(silverUrl));
+          if (!silverRes.ok) throw new Error(`SLV HTTP ${silverRes.status}`);
+          const silverData = await silverRes.json();
+
+          if (silverData.c && silverData.c > 0) {
+            const price = silverData.c.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const prevClose = silverData.pc;
+            const change = (silverData.c - prevClose).toFixed(2);
+            const changePct = ((silverData.c - prevClose) / prevClose * 100).toFixed(2);
+            const pos = (silverData.c - prevClose) >= 0;
+
+            document.getElementById('silver-price').textContent = price;
+            const silverEl = document.getElementById('silver-change');
+            silverEl.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
+            silverEl.className = `text-xs flex justify-center items-center ${pos ? 'positive' : 'negative'}`;
+          } else {
+            document.getElementById('silver-price').textContent = '—';
+            document.getElementById('silver-change').textContent = '장마감/데이터 없음';
+          }
+        } catch (err) {
+          console.error('Finnhub SLV 오류:', err);
+          document.getElementById('silver-price').textContent = '—';
+          document.getElementById('silver-change').textContent = '오류';
+        }
+
+        // 10. 원자재 공포탐욕 지수 (금 관련 → CNN Fear & Greed 재사용)
+        if (cnnValue !== null && !isNaN(cnnValue)) {
+          const cls = getKoreanClassification(cnnValue);
+          const rotation = cnnValue * 1.8 - 90;
+
+          document.getElementById('fng-value-commodities').textContent = cnnValue;
+          document.getElementById('fng-class-commodities').textContent = cls.text;
+          document.getElementById('fng-class-commodities').className = `text-xs text-center ${cls.color}`;
+          document.getElementById('fng-needle-commodities').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+        } else {
+          document.getElementById('fng-value-commodities').textContent = '—';
+          document.getElementById('fng-class-commodities').textContent = '데이터 없음';
+        }
+
       } catch (err) {
         console.error('데이터 업데이트 오류:', err);
       }
     }
 
     updateAllData();
-    setInterval(updateAllData, 60000); // 1분마다 업데이트
-    // setInterval(updateAllData, 300000); // 5분마다로 변경하고 싶을 때 사용
+    setInterval(updateAllData, 60000); // 1분마다
   </script>
 
 </body>
