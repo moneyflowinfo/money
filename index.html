@@ -649,30 +649,40 @@
           document.getElementById('ndx-change').textContent = '오류';
         }
 
-        // 8. 미국 주식 공포탐욕 지수 (CNN)
-        const cnnFngUrl = 'https://production.dataviz.cnn.io/index/fearandgreed/graphdata';
-        try {
-          const cnnRes = await fetch(proxy + encodeURIComponent(cnnFngUrl));
-          const cnnData = await cnnRes.json();
+        // 8. 미국 주식 공포탐욕 지수 (CNN) - proxy 없이 직접 호출 테스트
+const cnnFngUrl = 'https://production.dataviz.cnn.io/index/fearandgreed/graphdata';
+try {
+  const cnnRes = await fetch(cnnFngUrl);
+  if (!cnnRes.ok) throw new Error(`CNN HTTP ${cnnRes.status}`);
+  const cnnData = await cnnRes.json();
 
-          if (cnnData?.fear_and_greed?.score) {
-            const value = parseInt(cnnData.fear_and_greed.score, 10);
-            const cls = getKoreanClassification(value);
-            const rotation = value * 1.8 - 90;
+  // CNN 응답 구조: fear_and_greed.score 또는 fear_and_greed.historical.data 배열의 최신 값
+  let value;
+  if (cnnData?.fear_and_greed?.score) {
+    value = Math.round(cnnData.fear_and_greed.score);
+  } else if (cnnData?.fear_and_greed?.historical?.data?.length > 0) {
+    // 배열 형태일 경우 최신 값 (가장 최근 timestamp)
+    const latest = cnnData.fear_and_greed.historical.data[0]; // 배열이 최신순인지 확인 필요
+    value = Math.round(latest.y || latest.score);
+  }
 
-            document.getElementById('fng-value-us').textContent = value;
-            document.getElementById('fng-class-us').textContent = cls.text;
-            document.getElementById('fng-class-us').className = `text-xs text-center ${cls.color}`;
-            document.getElementById('fng-needle-us').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
-          } else {
-            document.getElementById('fng-value-us').textContent = '—';
-            document.getElementById('fng-class-us').textContent = '데이터 없음';
-          }
-        } catch (err) {
-          console.error('CNN Fear & Greed 오류:', err);
-          document.getElementById('fng-value-us').textContent = '—';
-          document.getElementById('fng-class-us').textContent = '오류';
-        }
+  if (value !== undefined && !isNaN(value)) {
+    const cls = getKoreanClassification(value);
+    const rotation = value * 1.8 - 90;
+
+    document.getElementById('fng-value-us').textContent = value;
+    document.getElementById('fng-class-us').textContent = cls.text;
+    document.getElementById('fng-class-us').className = `text-xs text-center ${cls.color}`;
+    document.getElementById('fng-needle-us').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+  } else {
+    document.getElementById('fng-value-us').textContent = '—';
+    document.getElementById('fng-class-us').textContent = '데이터 없음';
+  }
+} catch (err) {
+  console.error('CNN Fear & Greed 직접 fetch 오류:', err);
+  document.getElementById('fng-value-us').textContent = '—';
+  document.getElementById('fng-class-us').textContent = '오류';
+}
 
       } catch (err) {
         console.error('전체 데이터 업데이트 오류:', err);
