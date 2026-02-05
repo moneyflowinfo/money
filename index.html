@@ -489,7 +489,7 @@
                 <div class="gauge-container">
                   <div class="gauge-semi-circle"></div>
                   <div class="gauge-mask"></div>
-                  <div class="gauge-needle" id="fng-needle-crypto" style="transform: translateX(-50%) rotate(0deg);"></div>
+                  <div class="gauge-needle" id="fng-needle" style="transform: translateX(-50%) rotate(0deg);"></div>
                   <div class="gauge-center-point"></div>
                   <div class="gauge-labels">
                     <span>0</span>
@@ -538,6 +538,7 @@
     // 공포탐욕 지수 한글 매핑 함수
     function getKoreanClassification(value) {
       value = parseInt(value, 10);
+      if (isNaN(value)) return { text: '오류', color: 'text-gray-500' };
       if (value <= 24) return { text: '극단적 공포', color: 'text-red-500' };
       if (value <= 49) return { text: '공포', color: 'text-orange-500' };
       if (value === 50) return { text: '중립', color: 'text-gray-400' };
@@ -545,7 +546,7 @@
       return { text: '극단적 탐욕', color: 'text-emerald-500' };
     }
 
-    // CoinMarketCap API 키 (공개 저장소에 올리지 마세요!)
+    // CoinMarketCap API 키
     const CMC_API_KEY = 'e91c9920caf0426db888688a7f29f85d';
 
     // 모든 데이터 업데이트 함수
@@ -555,8 +556,8 @@
         const cgRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,krw&include_24hr_change=true');
         const cgData = await cgRes.json();
 
-        const btc = cgData.bitcoin;
-        if (btc) {
+        if (cgData.bitcoin) {
+          const btc = cgData.bitcoin;
           const usd = btc.usd.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
           const krw = Math.floor(btc.krw).toLocaleString('ko-KR');
           const chg = btc.usd_24h_change.toFixed(2);
@@ -571,8 +572,8 @@
           btcChgEl.innerHTML = `<i class="fas fa-arrow-trend-${pos ? 'up' : 'down'}"></i><span>${pos ? '+' : ''}${chg}%</span>`;
         }
 
-        const eth = cgData.ethereum;
-        if (eth) {
+        if (cgData.ethereum) {
+          const eth = cgData.ethereum;
           const usd = eth.usd.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
           const krw = Math.floor(eth.krw).toLocaleString('ko-KR');
           const chg = eth.usd_24h_change.toFixed(2);
@@ -588,11 +589,12 @@
         }
 
         // 2. 환율 USD/KRW
+        let currentKrwRate = null;
         const fxRes = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.min.json');
         const fxData = await fxRes.json();
-        if (fxData && fxData.usd && fxData.usd.krw) {
-          const krw = fxData.usd.krw.toFixed(1);
-          document.getElementById('usdkrw-value').textContent = `${krw}원`;
+        if (fxData?.usd?.krw) {
+          currentKrwRate = fxData.usd.krw;
+          document.getElementById('usdkrw-value').textContent = `${currentKrwRate.toFixed(1)}원`;
           document.getElementById('usdkrw-change').textContent = '실시간';
         }
 
@@ -639,8 +641,8 @@
         }
 
         // 5. 김치프리미엄 (BTC 기준)
-        if (upBtcKrw && btc) {
-          const globalBtcKrw = btc.usd * fxData.usd.krw; // 실제 환율 사용
+        if (upBtcKrw && cgData.bitcoin && currentKrwRate) {
+          const globalBtcKrw = cgData.bitcoin.usd * currentKrwRate;
           const premium = ((upBtcKrw / globalBtcKrw) - 1) * 100;
           const premiumStr = premium.toFixed(2);
           const pos = premium >= 0;
@@ -650,23 +652,27 @@
           kimchiEl.className = `value ${pos ? 'positive' : 'negative'}`;
         }
 
-        // 6. CoinMarketCap 공포탐욕 지수 (크립토용)
+        // 6. CoinMarketCap 공포탐욕 지수
+        console.log('공포탐욕 API 호출 시도...');
         const fngRes = await fetch('https://pro-api.coinmarketcap.com/v3/fear-and-greed/latest', {
-          method: 'GET',
           headers: {
             'X-CMC_PRO_API_KEY': CMC_API_KEY,
             'Accept': 'application/json'
           }
         });
 
+        console.log('API 응답 상태:', fngRes.status, fngRes.statusText);
+
         if (!fngRes.ok) {
-          throw new Error(`CMC API 오류: ${fngRes.status}`);
+          throw new Error(`CoinMarketCap API 오류: ${fngRes.status} ${fngRes.statusText}`);
         }
 
         const fngData = await fngRes.json();
+        console.log('CoinMarketCap 전체 응답:', fngData);
 
-        if (fngData?.data?.value) {
+        if (fngData?.data?.value != null) {
           const value = parseInt(fngData.data.value, 10);
+          console.log('공포탐욕 값:', value);
 
           document.getElementById('fng-value').textContent = value;
 
@@ -677,16 +683,17 @@
 
           const rotation = value * 1.8 - 90;
           document.getElementById('fng-needle').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
-
-          // 다른 섹션에도 동일 값 반영 (필요시 주석 해제)
-          // document.getElementById('fng-value-us').textContent = value;
-          // document.getElementById('fng-class-us').textContent = cls.text;
-          // document.getElementById('fng-class-us').className = `text-xs text-center ${cls.color}`;
-          // document.getElementById('fng-needle-us').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+          console.log('게이지 업데이트 완료');
+        } else {
+          console.warn('value 필드가 응답에 없음:', fngData);
+          document.getElementById('fng-value').textContent = '—';
+          document.getElementById('fng-class').textContent = '데이터 없음';
         }
 
       } catch (err) {
         console.error('데이터 업데이트 오류:', err);
+        document.getElementById('fng-value').textContent = '오류';
+        document.getElementById('fng-class').textContent = '불러오기 실패';
       }
     }
 
