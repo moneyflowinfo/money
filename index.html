@@ -353,14 +353,14 @@
             <h2 class="section-title">한국 주식</h2>
             <div class="flex-grow space-y-3 flex flex-col">
               <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
-                <div class="text-base font-semibold">코스피</div>
+                <div class="text-base font-semibold">코스피 (KODEX 200)</div>
                 <div class="mt-1">
                   <div class="text-xl font-bold" id="kospi-price">—</div>
                   <div class="text-xs" id="kospi-change">—</div>
                 </div>
               </div>
               <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
-                <div class="text-base font-semibold">코스닥</div>
+                <div class="text-base font-semibold">코스닥 (KODEX 150)</div>
                 <div class="mt-1">
                   <div class="text-xl font-bold" id="kosdaq-price">—</div>
                   <div class="text-xs" id="kosdaq-change">—</div>
@@ -445,7 +445,7 @@
 
   <!-- 스크립트 -->
   <script>
-    // 테마 토글 (기존 그대로)
+    // 테마 토글
     const toggleBtn = document.getElementById('theme-toggle');
     const icon = document.getElementById('theme-icon');
     const html = document.documentElement;
@@ -486,10 +486,10 @@
       try {
         const proxy = '/api/proxy?url=';
 
-        // 환율, BTC/ETH, 업비트, 빗썸, 김프, 크립토 F&G, 미국 주식, 원자재 부분은 그대로 유지
-        // (생략 - 이전 코드와 동일하게 유지)
+        // 1~8번 (환율, 크립토, 원자재, 미국 주식, CNN F&G) 부분은 이전과 동일하게 유지
+        // 여기서는 생략하고 한국 주식 부분만 집중적으로 수정
 
-        // 미국 주식 공포탐욕 지수 (CNN) - 값 저장용 변수
+        // 미국 주식 CNN Fear & Greed (한국 주식에서도 재사용하기 위해 값 저장)
         let cnnValue = null;
         const cnnFngUrl = 'https://production.dataviz.cnn.io/index/fearandgreed/graphdata';
         try {
@@ -517,112 +517,63 @@
           console.error('CNN Fear & Greed 오류:', err);
         }
 
-        // 한국 주식 - 우선 지수 시도 → 실패시 ETF fallback
-        // 코스피 (^KS11)
-        let kospiSuccess = false;
-        const kospiUrl = `https://finnhub.io/api/v1/quote?symbol=%5EKS11&token=${FINNHUB_KEY}`;
+        // 9. 한국 주식 - KODEX 200 (122630) 고정
+        const kodex200Url = `https://finnhub.io/api/v1/quote?symbol=122630&token=${FINNHUB_KEY}`;
         try {
-          const kospiRes = await fetch(proxy + encodeURIComponent(kospiUrl));
-          if (kospiRes.ok) {
-            const kospiData = await kospiRes.json();
-            if (kospiData.c && kospiData.c > 0) {
-              const price = kospiData.c.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-              const prevClose = kospiData.pc;
-              const change = (kospiData.c - prevClose).toFixed(2);
-              const changePct = ((kospiData.c - prevClose) / prevClose * 100).toFixed(2);
-              const pos = (kospiData.c - prevClose) >= 0;
+          const res = await fetch(proxy + encodeURIComponent(kodex200Url));
+          if (!res.ok) throw new Error(`KODEX200 HTTP ${res.status}`);
+          const data = await res.json();
 
-              document.getElementById('kospi-price').textContent = price;
-              const el = document.getElementById('kospi-change');
-              el.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
-              el.className = `text-xs flex justify-center items-center ${pos ? 'positive' : 'negative'}`;
-              kospiSuccess = true;
-            }
-          }
-        } catch (err) {
-          console.log('코스피 지수 실패, KODEX 200으로 fallback');
-        }
+          if (data.c && data.c > 0) {
+            const price = data.c.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const prevClose = data.pc;
+            const change = (data.c - prevClose).toFixed(2);
+            const changePct = ((data.c - prevClose) / prevClose * 100).toFixed(2);
+            const pos = (data.c - prevClose) >= 0;
 
-        // 코스피 실패 시 KODEX 200 (122630)
-        if (!kospiSuccess) {
-          const kodex200Url = `https://finnhub.io/api/v1/quote?symbol=122630&token=${FINNHUB_KEY}`;
-          try {
-            const res = await fetch(proxy + encodeURIComponent(kodex200Url));
-            if (!res.ok) throw new Error(`KODEX200 HTTP ${res.status}`);
-            const data = await res.json();
-
-            if (data.c && data.c > 0) {
-              const price = data.c.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-              const prevClose = data.pc;
-              const change = (data.c - prevClose).toFixed(2);
-              const changePct = ((data.c - prevClose) / prevClose * 100).toFixed(2);
-              const pos = (data.c - prevClose) >= 0;
-
-              document.getElementById('kospi-price').textContent = price + " (KODEX200)";
-              const el = document.getElementById('kospi-change');
-              el.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
-              el.className = `text-xs flex justify-center items-center ${pos ? 'positive' : 'negative'}`;
-            }
-          } catch (err) {
-            console.error('KODEX200 오류:', err);
+            document.getElementById('kospi-price').textContent = price;
+            const el = document.getElementById('kospi-change');
+            el.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
+            el.className = `text-xs flex justify-center items-center ${pos ? 'positive' : 'negative'}`;
+          } else {
             document.getElementById('kospi-price').textContent = '—';
-            document.getElementById('kospi-change').textContent = '오류';
-          }
-        }
-
-        // 코스닥 (^KQ11)
-        let kosdaqSuccess = false;
-        const kosdaqUrl = `https://finnhub.io/api/v1/quote?symbol=%5EKQ11&token=${FINNHUB_KEY}`;
-        try {
-          const kosdaqRes = await fetch(proxy + encodeURIComponent(kosdaqUrl));
-          if (kosdaqRes.ok) {
-            const kosdaqData = await kosdaqRes.json();
-            if (kosdaqData.c && kosdaqData.c > 0) {
-              const price = kosdaqData.c.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-              const prevClose = kosdaqData.pc;
-              const change = (kosdaqData.c - prevClose).toFixed(2);
-              const changePct = ((kosdaqData.c - prevClose) / prevClose * 100).toFixed(2);
-              const pos = (kosdaqData.c - prevClose) >= 0;
-
-              document.getElementById('kosdaq-price').textContent = price;
-              const el = document.getElementById('kosdaq-change');
-              el.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
-              el.className = `text-xs flex justify-center items-center ${pos ? 'positive' : 'negative'}`;
-              kosdaqSuccess = true;
-            }
+            document.getElementById('kospi-change').textContent = '장마감/데이터 없음';
           }
         } catch (err) {
-          console.log('코스닥 지수 실패, KODEX 150으로 fallback');
+          console.error('KODEX 200 오류:', err);
+          document.getElementById('kospi-price').textContent = '—';
+          document.getElementById('kospi-change').textContent = '오류';
         }
 
-        // 코스닥 실패 시 KODEX 코스닥150 (229200)
-        if (!kosdaqSuccess) {
-          const kodex150Url = `https://finnhub.io/api/v1/quote?symbol=229200&token=${FINNHUB_KEY}`;
-          try {
-            const res = await fetch(proxy + encodeURIComponent(kodex150Url));
-            if (!res.ok) throw new Error(`KODEX150 HTTP ${res.status}`);
-            const data = await res.json();
+        // 10. 한국 주식 - KODEX 코스닥150 (229200) 고정
+        const kodex150Url = `https://finnhub.io/api/v1/quote?symbol=229200&token=${FINNHUB_KEY}`;
+        try {
+          const res = await fetch(proxy + encodeURIComponent(kodex150Url));
+          if (!res.ok) throw new Error(`KODEX150 HTTP ${res.status}`);
+          const data = await res.json();
 
-            if (data.c && data.c > 0) {
-              const price = data.c.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-              const prevClose = data.pc;
-              const change = (data.c - prevClose).toFixed(2);
-              const changePct = ((data.c - prevClose) / prevClose * 100).toFixed(2);
-              const pos = (data.c - prevClose) >= 0;
+          if (data.c && data.c > 0) {
+            const price = data.c.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const prevClose = data.pc;
+            const change = (data.c - prevClose).toFixed(2);
+            const changePct = ((data.c - prevClose) / prevClose * 100).toFixed(2);
+            const pos = (data.c - prevClose) >= 0;
 
-              document.getElementById('kosdaq-price').textContent = price + " (KODEX150)";
-              const el = document.getElementById('kosdaq-change');
-              el.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
-              el.className = `text-xs flex justify-center items-center ${pos ? 'positive' : 'negative'}`;
-            }
-          } catch (err) {
-            console.error('KODEX150 오류:', err);
+            document.getElementById('kosdaq-price').textContent = price;
+            const el = document.getElementById('kosdaq-change');
+            el.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
+            el.className = `text-xs flex justify-center items-center ${pos ? 'positive' : 'negative'}`;
+          } else {
             document.getElementById('kosdaq-price').textContent = '—';
-            document.getElementById('kosdaq-change').textContent = '오류';
+            document.getElementById('kosdaq-change').textContent = '장마감/데이터 없음';
           }
+        } catch (err) {
+          console.error('KODEX 150 오류:', err);
+          document.getElementById('kosdaq-price').textContent = '—';
+          document.getElementById('kosdaq-change').textContent = '오류';
         }
 
-        // 한국 주식 공포탐욕 지수 (CNN 재사용)
+        // 11. 한국 주식 공포탐욕 지수 (CNN 재사용)
         if (cnnValue !== null && !isNaN(cnnValue)) {
           const cls = getKoreanClassification(cnnValue);
           const rotation = cnnValue * 1.8 - 90;
@@ -635,6 +586,8 @@
           document.getElementById('fng-value-korea').textContent = '—';
           document.getElementById('fng-class-korea').textContent = '데이터 없음';
         }
+
+        // (기존 다른 데이터 업데이트 로직은 그대로 유지)
 
       } catch (err) {
         console.error('데이터 업데이트 오류:', err);
