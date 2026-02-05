@@ -355,7 +355,7 @@
                 <div class="gauge-container">
                   <div class="gauge-semi-circle"></div>
                   <div class="gauge-mask"></div>
-                  <div class="gauge-needle" id="fng-needle" style="transform: translateX(-50%) rotate(calc(50 * 1.8deg - 90deg));"></div>
+                  <div class="gauge-needle" id="fng-needle" style="transform: translateX(-50%) rotate(0deg);"></div>
                   <div class="gauge-center-point"></div>
                   <div class="gauge-labels">
                     <span>0</span>
@@ -397,15 +397,15 @@
                 <div class="gauge-container">
                   <div class="gauge-semi-circle"></div>
                   <div class="gauge-mask"></div>
-                  <div class="gauge-needle" style="transform: translateX(-50%) rotate(calc(62 * 1.8deg - 90deg));"></div>
+                  <div class="gauge-needle" id="fng-needle-us" style="transform: translateX(-50%) rotate(0deg);"></div>
                   <div class="gauge-center-point"></div>
                   <div class="gauge-labels">
                     <span>Extreme Fear</span>
                     <span>Extreme Greed</span>
                   </div>
                 </div>
-                <div class="text-center text-xl font-bold mt-1">62</div>
-                <div class="text-xs text-center">탐욕</div>
+                <div class="text-center text-xl font-bold mt-1" id="fng-value-us">—</div>
+                <div class="text-xs text-center" id="fng-class-us">—</div>
               </div>
             </div>
           </section>
@@ -439,15 +439,15 @@
                 <div class="gauge-container">
                   <div class="gauge-semi-circle"></div>
                   <div class="gauge-mask"></div>
-                  <div class="gauge-needle" style="transform: translateX(-50%) rotate(calc(79.9 * 1.8deg - 90deg));"></div>
+                  <div class="gauge-needle" id="fng-needle-kr" style="transform: translateX(-50%) rotate(0deg);"></div>
                   <div class="gauge-center-point"></div>
                   <div class="gauge-labels">
                     <span>V.Fear</span>
                     <span>V.Greed</span>
                   </div>
                 </div>
-                <div class="text-center text-xl font-bold mt-1">79.9</div>
-                <div class="text-xs text-center">극단적 탐욕</div>
+                <div class="text-center text-xl font-bold mt-1" id="fng-value-kr">—</div>
+                <div class="text-xs text-center" id="fng-class-kr">—</div>
               </div>
             </div>
           </section>
@@ -489,7 +489,7 @@
                 <div class="gauge-container">
                   <div class="gauge-semi-circle"></div>
                   <div class="gauge-mask"></div>
-                  <div class="gauge-needle" id="fng-needle" style="transform: translateX(-50%) rotate(calc(50 * 1.8deg - 90deg));"></div>
+                  <div class="gauge-needle" id="fng-needle-crypto" style="transform: translateX(-50%) rotate(0deg);"></div>
                   <div class="gauge-center-point"></div>
                   <div class="gauge-labels">
                     <span>0</span>
@@ -545,6 +545,9 @@
       return { text: '극단적 탐욕', color: 'text-emerald-500' };
     }
 
+    // CoinMarketCap API 키 (공개 저장소에 올리지 마세요!)
+    const CMC_API_KEY = 'e91c9920caf0426db888688a7f29f85d';
+
     // 모든 데이터 업데이트 함수
     async function updateAllData() {
       try {
@@ -584,17 +587,16 @@
           ethChgEl.innerHTML = `<i class="fas fa-arrow-trend-${pos ? 'up' : 'down'}"></i><span>${pos ? '+' : ''}${chg}%</span>`;
         }
 
-        // 2. 환율 USD/KRW (키 없이 바로 사용 가능한 API)
-        const fxRes = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd/krw.json');
+        // 2. 환율 USD/KRW
+        const fxRes = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.min.json');
         const fxData = await fxRes.json();
         if (fxData && fxData.usd && fxData.usd.krw) {
           const krw = fxData.usd.krw.toFixed(1);
           document.getElementById('usdkrw-value').textContent = `${krw}원`;
           document.getElementById('usdkrw-change').textContent = '실시간';
-          document.getElementById('usdkrw-change').className = 'change';
         }
 
-        // 3. 업비트 BTC-KRW (김치프리미엄용) + USDT
+        // 3. 업비트 BTC-KRW + USDT
         const upRes = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC,KRW-USDT');
         const upData = await upRes.json();
 
@@ -612,7 +614,6 @@
           }
         });
 
-        // 업비트 USDT
         if (upUsdt) {
           const price = Math.round(upUsdt).toLocaleString('ko-KR');
           const pos = upUsdtChgRate >= 0;
@@ -639,7 +640,7 @@
 
         // 5. 김치프리미엄 (BTC 기준)
         if (upBtcKrw && btc) {
-          const globalBtcKrw = btc.usd * 1449; // 임시 환율 (실제로는 위에서 가져온 currentKrw 사용 가능)
+          const globalBtcKrw = btc.usd * fxData.usd.krw; // 실제 환율 사용
           const premium = ((upBtcKrw / globalBtcKrw) - 1) * 100;
           const premiumStr = premium.toFixed(2);
           const pos = premium >= 0;
@@ -649,12 +650,23 @@
           kimchiEl.className = `value ${pos ? 'positive' : 'negative'}`;
         }
 
-        // 6. 공포탐욕 지수
-        const fngRes = await fetch('https://api.alternative.me/fng/?limit=1');
+        // 6. CoinMarketCap 공포탐욕 지수 (크립토용)
+        const fngRes = await fetch('https://pro-api.coinmarketcap.com/v3/fear-and-greed/latest', {
+          method: 'GET',
+          headers: {
+            'X-CMC_PRO_API_KEY': CMC_API_KEY,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!fngRes.ok) {
+          throw new Error(`CMC API 오류: ${fngRes.status}`);
+        }
+
         const fngData = await fngRes.json();
-        if (fngData && fngData.data && fngData.data.length > 0) {
-          const fng = fngData.data[0];
-          const value = parseInt(fng.value, 10);
+
+        if (fngData?.data?.value) {
+          const value = parseInt(fngData.data.value, 10);
 
           document.getElementById('fng-value').textContent = value;
 
@@ -665,20 +677,17 @@
 
           const rotation = value * 1.8 - 90;
           document.getElementById('fng-needle').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+
+          // 다른 섹션에도 동일 값 반영 (필요시 주석 해제)
+          // document.getElementById('fng-value-us').textContent = value;
+          // document.getElementById('fng-class-us').textContent = cls.text;
+          // document.getElementById('fng-class-us').className = `text-xs text-center ${cls.color}`;
+          // document.getElementById('fng-needle-us').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
         }
 
       } catch (err) {
         console.error('데이터 업데이트 오류:', err);
       }
-    }
-
-    // 공포탐욕 지수 한글 매핑 함수
-    function getKoreanClassification(value) {
-      if (value <= 24) return { text: '극단적 공포', color: 'text-red-500' };
-      if (value <= 49) return { text: '공포', color: 'text-orange-500' };
-      if (value === 50) return { text: '중립', color: 'text-gray-400' };
-      if (value <= 74) return { text: '탐욕', color: 'text-green-500' };
-      return { text: '극단적 탐욕', color: 'text-emerald-500' };
     }
 
     // 페이지 로드 시 즉시 실행
