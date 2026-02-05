@@ -147,21 +147,6 @@
       justify-content: center;
     }
 
-    .card .mt-2 {
-      min-height: 55px;
-    }
-
-    .text-2xl, .text-xl {
-      font-variant-numeric: tabular-nums;
-    }
-
-    .number-container {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 100%;
-    }
-
     header {
       padding: 0.5rem 1rem;
     }
@@ -326,7 +311,7 @@
       <div class="max-w-7xl mx-auto">
         <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-5">
 
-          <!-- 원자재 섹션 -->
+          <!-- 원자재 섹션 (공포탐욕 지수 제거 또는 주석 처리) -->
           <section class="card p-5 space-y-3 flex flex-col">
             <h2 class="section-title">원자재</h2>
             <div class="flex-grow space-y-3 flex flex-col">
@@ -350,25 +335,15 @@
                   </div>
                 </div>
               </div>
-              <div class="card p-3">
-                <h3 class="text-base font-semibold text-center mb-1">공포 탐욕 지수</h3>
-                <div class="gauge-container">
-                  <div class="gauge-semi-circle"></div>
-                  <div class="gauge-mask"></div>
-                  <div class="gauge-needle" id="fng-needle" style="transform: translateX(-50%) rotate(0deg);"></div>
-                  <div class="gauge-center-point"></div>
-                  <div class="gauge-labels">
-                    <span>0</span>
-                    <span>100</span>
-                  </div>
-                </div>
-                <div class="text-center text-xl font-bold mt-1" id="fng-value">—</div>
-                <div class="text-xs text-center" id="fng-class">—</div>
+              <!-- 공포탐욕 지수는 크립토에만 표시하므로 여기서는 생략 -->
+              <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
+                <div class="text-base font-semibold">공포 탐욕 지수</div>
+                <div class="mt-4 text-gray-500">크립토 섹션 참조</div>
               </div>
             </div>
           </section>
 
-          <!-- 미국 주식 섹션 -->
+          <!-- 미국 주식 섹션 (공포탐욕 지수 제거 또는 주석 처리) -->
           <section class="card p-5 space-y-3 flex flex-col">
             <h2 class="section-title">미국 주식</h2>
             <div class="flex-grow space-y-3 flex flex-col">
@@ -392,25 +367,15 @@
                   </div>
                 </div>
               </div>
-              <div class="card p-3">
-                <h3 class="text-base font-semibold text-center mb-1">공포 탐욕 지수</h3>
-                <div class="gauge-container">
-                  <div class="gauge-semi-circle"></div>
-                  <div class="gauge-mask"></div>
-                  <div class="gauge-needle" id="fng-needle-us" style="transform: translateX(-50%) rotate(0deg);"></div>
-                  <div class="gauge-center-point"></div>
-                  <div class="gauge-labels">
-                    <span>Extreme Fear</span>
-                    <span>Extreme Greed</span>
-                  </div>
-                </div>
-                <div class="text-center text-xl font-bold mt-1" id="fng-value-us">—</div>
-                <div class="text-xs text-center" id="fng-class-us">—</div>
+              <!-- 공포탐욕 지수는 크립토에만 표시하므로 여기서는 생략 -->
+              <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
+                <div class="text-base font-semibold">공포 탐욕 지수</div>
+                <div class="mt-4 text-gray-500">크립토 섹션 참조</div>
               </div>
             </div>
           </section>
 
-          <!-- 한국 주식 섹션 -->
+          <!-- 한국 주식 섹션 (공포탐욕 지수 제거 또는 주석 처리) -->
           <section class="card p-5 space-y-3 flex flex-col">
             <h2 class="section-title">한국 주식</h2>
             <div class="flex-grow space-y-3 flex flex-col">
@@ -434,20 +399,10 @@
                   </div>
                 </div>
               </div>
-              <div class="card p-3">
-                <h3 class="text-base font-semibold text-center mb-1">공포 탐욕 지수</h3>
-                <div class="gauge-container">
-                  <div class="gauge-semi-circle"></div>
-                  <div class="gauge-mask"></div>
-                  <div class="gauge-needle" id="fng-needle-kr" style="transform: translateX(-50%) rotate(0deg);"></div>
-                  <div class="gauge-center-point"></div>
-                  <div class="gauge-labels">
-                    <span>V.Fear</span>
-                    <span>V.Greed</span>
-                  </div>
-                </div>
-                <div class="text-center text-xl font-bold mt-1" id="fng-value-kr">—</div>
-                <div class="text-xs text-center" id="fng-class-kr">—</div>
+              <!-- 공포탐욕 지수는 크립토에만 표시하므로 여기서는 생략 -->
+              <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
+                <div class="text-base font-semibold">공포 탐욕 지수</div>
+                <div class="mt-4 text-gray-500">크립토 섹션 참조</div>
               </div>
             </div>
           </section>
@@ -489,15 +444,15 @@
                 <div class="gauge-container">
                   <div class="gauge-semi-circle"></div>
                   <div class="gauge-mask"></div>
-                  <div class="gauge-needle" id="fng-needle" style="transform: translateX(-50%) rotate(0deg);"></div>
+                  <div class="gauge-needle" id="fng-needle-crypto" style="transform: translateX(-50%) rotate(0deg);"></div>
                   <div class="gauge-center-point"></div>
                   <div class="gauge-labels">
                     <span>0</span>
                     <span>100</span>
                   </div>
                 </div>
-                <div class="text-center text-xl font-bold mt-1" id="fng-value">—</div>
-                <div class="text-xs text-center" id="fng-class">—</div>
+                <div class="text-center text-xl font-bold mt-1" id="fng-value-crypto">—</div>
+                <div class="text-xs text-center" id="fng-class-crypto">—</div>
               </div>
             </div>
           </section>
@@ -649,7 +604,7 @@
           kimchiEl.className = `value ${pos ? 'positive' : 'negative'}`;
         }
 
-        // 6. Alternative.me 공포탐욕 지수
+        // 6. Alternative.me 공포탐욕 지수 → 크립토 섹션에만 반영
         const fngRes = await fetch('https://api.alternative.me/fng/?limit=1');
         if (!fngRes.ok) {
           throw new Error(`Alternative.me API 오류: ${fngRes.status}`);
@@ -660,25 +615,23 @@
         if (fngData?.data?.length > 0) {
           const fng = fngData.data[0];
           const value = parseInt(fng.value, 10);
-
-          document.getElementById('fng-value').textContent = value;
-
           const cls = getKoreanClassification(value);
-          const fngClassEl = document.getElementById('fng-class');
-          fngClassEl.textContent = cls.text;
-          fngClassEl.className = `text-xs text-center ${cls.color}`;
-
           const rotation = value * 1.8 - 90;
-          document.getElementById('fng-needle').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+
+          // 크립토 섹션에만 업데이트
+          document.getElementById('fng-value-crypto').textContent = value;
+          document.getElementById('fng-class-crypto').textContent = cls.text;
+          document.getElementById('fng-class-crypto').className = `text-xs text-center ${cls.color}`;
+          document.getElementById('fng-needle-crypto').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
         } else {
-          document.getElementById('fng-value').textContent = '—';
-          document.getElementById('fng-class').textContent = '데이터 없음';
+          document.getElementById('fng-value-crypto').textContent = '—';
+          document.getElementById('fng-class-crypto').textContent = '데이터 없음';
         }
 
       } catch (err) {
         console.error('데이터 업데이트 오류:', err);
-        document.getElementById('fng-value').textContent = '오류';
-        document.getElementById('fng-class').textContent = '불러오기 실패';
+        document.getElementById('fng-value-crypto').textContent = '오류';
+        document.getElementById('fng-class-crypto').textContent = '불러오기 실패';
       }
     }
 
