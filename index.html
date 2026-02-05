@@ -485,7 +485,7 @@
       icon.classList.add('fa-sun');
     }
 
-    // 공포탐욕 지수 한글 매핑
+    // 공포탐욕 지수 한글 매핑 함수
     function getKoreanClassification(value) {
       value = parseInt(value, 10);
       if (isNaN(value)) return { text: '오류', color: 'text-gray-500' };
@@ -496,11 +496,24 @@
       return { text: '극단적 탐욕', color: 'text-emerald-500' };
     }
 
-    // 모든 데이터 업데이트
+    // 모든 데이터 업데이트 함수
     async function updateAllData() {
       try {
-        // 1. CoinGecko - BTC + ETH
-        const cgRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,krw&include_24hr_change=true');
+        // 프록시 기본 경로
+        const proxy = '/api/proxy?url=';
+
+        // 1. 환율
+        const fxTarget = 'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.min.json';
+        const fxRes = await fetch(proxy + encodeURIComponent(fxTarget));
+        const fxData = await fxRes.json();
+        if (fxData?.usd?.krw) {
+          document.getElementById('usdkrw-value').textContent = `${fxData.usd.krw.toFixed(1)}원`;
+          document.getElementById('usdkrw-change').textContent = '실시간';
+        }
+
+        // 2. CoinGecko BTC + ETH
+        const cgTarget = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,krw&include_24hr_change=true';
+        const cgRes = await fetch(proxy + encodeURIComponent(cgTarget));
         const cgData = await cgRes.json();
 
         if (cgData.bitcoin) {
@@ -535,19 +548,15 @@
           ethChgEl.innerHTML = `<i class="fas fa-arrow-trend-${pos ? 'up' : 'down'}"></i><span>${pos ? '+' : ''}${chg}%</span>`;
         }
 
-        // 2. 환율
-        const fxRes = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.min.json');
-        const fxData = await fxRes.json();
-        if (fxData?.usd?.krw) {
-          const krw = fxData.usd.krw.toFixed(1);
-          document.getElementById('usdkrw-value').textContent = `${krw}원`;
-        }
-
-        // 3. 업비트
+        // 3. 업비트 BTC-KRW + USDT (한국 API라 프록시 없이도 잘 됨)
         const upRes = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC,KRW-USDT');
         const upData = await upRes.json();
 
-        let upBtcKrw = 0, upUsdt = 0, upUsdtChgRate = 0, upUsdtChgWon = 0;
+        let upBtcKrw = 0;
+        let upUsdt = 0;
+        let upUsdtChgRate = 0;
+        let upUsdtChgWon = 0;
+
         upData.forEach(item => {
           if (item.market === 'KRW-BTC') upBtcKrw = item.trade_price;
           if (item.market === 'KRW-USDT') {
@@ -561,12 +570,12 @@
           const price = Math.round(upUsdt).toLocaleString('ko-KR');
           const pos = upUsdtChgRate >= 0;
           document.getElementById('upbit-usdt-value').textContent = `₩${price}`;
-          const el = document.getElementById('upbit-usdt-change');
-          el.textContent = `${pos ? '+' : ''}${upUsdtChgRate}% (${pos ? '+' : ''}${upUsdtChgWon.toLocaleString('ko-KR')}원)`;
-          el.className = `change ${pos ? 'positive' : 'negative'}`;
+          const upChgEl = document.getElementById('upbit-usdt-change');
+          upChgEl.textContent = `${pos ? '+' : ''}${upUsdtChgRate}% (${pos ? '+' : ''}${upUsdtChgWon.toLocaleString('ko-KR')}원)`;
+          upChgEl.className = `change ${pos ? 'positive' : 'negative'}`;
         }
 
-        // 4. 빗썸 USDT
+        // 4. 빗썸 USDT-KRW
         const bhRes = await fetch('https://api.bithumb.com/public/ticker/USDT_KRW');
         const bhData = await bhRes.json();
         if (bhData.status === '0000') {
@@ -574,58 +583,28 @@
           const chgRate = ((bhData.data.closing_price - bhData.data.opening_price) / bhData.data.opening_price * 100).toFixed(2);
           const chgWon = Math.round(bhData.data.closing_price - bhData.data.opening_price).toLocaleString('ko-KR');
           const pos = chgRate >= 0;
+
           document.getElementById('bithumb-usdt-value').textContent = `₩${price}`;
-          const el = document.getElementById('bithumb-usdt-change');
-          el.textContent = `${pos ? '+' : ''}${chgRate}% (${pos ? '+' : ''}${chgWon}원)`;
-          el.className = `change ${pos ? 'positive' : 'negative'}`;
+          const bhChgEl = document.getElementById('bithumb-usdt-change');
+          bhChgEl.textContent = `${pos ? '+' : ''}${chgRate}% (${pos ? '+' : ''}${chgWon}원)`;
+          bhChgEl.className = `change ${pos ? 'positive' : 'negative'}`;
         }
 
-        // 5. 김치프리미엄
+        // 5. 김치프리미엄 (BTC 기준)
         if (upBtcKrw && cgData.bitcoin && fxData?.usd?.krw) {
           const globalBtcKrw = cgData.bitcoin.usd * fxData.usd.krw;
           const premium = ((upBtcKrw / globalBtcKrw) - 1) * 100;
           const premiumStr = premium.toFixed(2);
           const pos = premium >= 0;
+
           const kimchiEl = document.getElementById('kimchi-premium');
           kimchiEl.textContent = `${pos ? '+' : ''}${premiumStr}%`;
           kimchiEl.className = `value ${pos ? 'positive' : 'negative'}`;
         }
 
-        // 6. 미국 주식 - Yahoo Finance (S&P 500, NASDAQ 100)
-        const yahooRes = await fetch('https://query1.finance.yahoo.com/v7/finance/quote?symbols=^GSPC,^NDX');
-        const yahooData = await yahooRes.json();
-        const quotes = yahooData.quoteResponse.result || [];
-
-        quotes.forEach(quote => {
-          if (quote.symbol === '^GSPC') {
-            const price = quote.regularMarketPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            const change = quote.regularMarketChange.toFixed(2);
-            const changePct = quote.regularMarketChangePercent.toFixed(2);
-            const pos = change >= 0;
-
-            document.getElementById('sp500-price').textContent = price;
-            const spChgEl = document.getElementById('sp500-change');
-            spChgEl.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
-            spChgEl.className = `text-xs flex justify-center items-center space-x-1 ${pos ? 'positive' : 'negative'}`;
-          }
-
-          if (quote.symbol === '^NDX') {
-            const price = quote.regularMarketPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            const change = quote.regularMarketChange.toFixed(2);
-            const changePct = quote.regularMarketChangePercent.toFixed(2);
-            const pos = change >= 0;
-
-            document.getElementById('ndx-price').textContent = price;
-            const ndxChgEl = document.getElementById('ndx-change');
-            ndxChgEl.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
-            ndxChgEl.className = `text-xs flex justify-center items-center space-x-1 ${pos ? 'positive' : 'negative'}`;
-          }
-        });
-
-        // 7. Alternative.me 공포탐욕 지수 → 크립토 섹션에 표시
-        const fngRes = await fetch('https://api.alternative.me/fng/?limit=1');
-        if (!fngRes.ok) throw new Error('FNG API 오류');
-
+        // 6. Alternative.me 공포탐욕 지수 → 크립토 섹션
+        const fngTarget = 'https://api.alternative.me/fng/?limit=1';
+        const fngRes = await fetch(proxy + encodeURIComponent(fngTarget));
         const fngData = await fngRes.json();
 
         if (fngData?.data?.length > 0) {
@@ -639,12 +618,47 @@
           document.getElementById('fng-needle-crypto').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
         }
 
+        // 7. 미국 주식 - Yahoo Finance
+        const yahooTarget = 'https://query1.finance.yahoo.com/v7/finance/quote?symbols=^GSPC,^NDX';
+        const yahooRes = await fetch(proxy + encodeURIComponent(yahooTarget));
+        const yahooData = await yahooRes.json();
+        const quotes = yahooData.quoteResponse?.result || [];
+
+        quotes.forEach(quote => {
+          if (quote.symbol === '^GSPC') {
+            const price = quote.regularMarketPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const changePct = quote.regularMarketChangePercent.toFixed(2);
+            const change = quote.regularMarketChange.toFixed(2);
+            const pos = quote.regularMarketChange >= 0;
+
+            document.getElementById('sp500-price').textContent = price;
+            const spChgEl = document.getElementById('sp500-change');
+            spChgEl.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
+            spChgEl.className = `text-xs flex justify-center items-center ${pos ? 'positive' : 'negative'}`;
+          }
+
+          if (quote.symbol === '^NDX') {
+            const price = quote.regularMarketPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const changePct = quote.regularMarketChangePercent.toFixed(2);
+            const change = quote.regularMarketChange.toFixed(2);
+            const pos = quote.regularMarketChange >= 0;
+
+            document.getElementById('ndx-price').textContent = price;
+            const ndxChgEl = document.getElementById('ndx-change');
+            ndxChgEl.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
+            ndxChgEl.className = `text-xs flex justify-center items-center ${pos ? 'positive' : 'negative'}`;
+          }
+        });
+
       } catch (err) {
-        console.error('업데이트 오류:', err);
+        console.error('데이터 업데이트 오류:', err);
       }
     }
 
+    // 페이지 로드 시 즉시 실행
     updateAllData();
+
+    // 1분마다 업데이트
     setInterval(updateAllData, 60 * 1000);
   </script>
 
