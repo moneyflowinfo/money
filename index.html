@@ -312,14 +312,14 @@
             <h2 class="section-title">미국 주식</h2>
             <div class="flex-grow space-y-3 flex flex-col">
               <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
-                <div class="text-base font-semibold">S&P 500</div>
+                <div class="text-base font-semibold">S&P 500 (SPY)</div>
                 <div class="mt-1">
                   <div class="text-xl font-bold" id="sp500-price">—</div>
                   <div class="text-xs" id="sp500-change">—</div>
                 </div>
               </div>
               <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
-                <div class="text-base font-semibold">NASDAQ 100</div>
+                <div class="text-base font-semibold">NASDAQ 100 (QQQ)</div>
                 <div class="mt-1">
                   <div class="text-xl font-bold" id="ndx-price">—</div>
                   <div class="text-xs" id="ndx-change">—</div>
@@ -576,7 +576,7 @@
           kimchiEl.className = `value ${pos ? 'positive' : 'negative'}`;
         }
 
-        // 6. 공포탐욕 지수 (Alternative.me) - 크립토 섹션
+        // 6. 크립토 공포탐욕 지수 (Alternative.me)
         const fngTarget = 'https://api.alternative.me/fng/?limit=1';
         const fngRes = await fetch(proxy + encodeURIComponent(fngTarget));
         const fngData = await fngRes.json();
@@ -592,8 +592,8 @@
           document.getElementById('fng-needle-crypto').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
         }
 
-        // 7. 미국 주식 - Finnhub API
-        // SPY (S&P 500 대체)
+        // 7. 미국 주식 - Finnhub (SPY, QQQ)
+        // SPY (S&P 500 ETF)
         const sp500Url = `https://finnhub.io/api/v1/quote?symbol=SPY&token=${FINNHUB_KEY}`;
         try {
           const spRes = await fetch(proxy + encodeURIComponent(sp500Url));
@@ -614,15 +614,14 @@
           } else {
             document.getElementById('sp500-price').textContent = '—';
             document.getElementById('sp500-change').textContent = '장마감/데이터 없음';
-            console.log('Finnhub SPY 데이터 부족:', spData);
           }
         } catch (err) {
-          console.error('Finnhub SPY fetch 오류:', err);
+          console.error('Finnhub SPY 오류:', err);
           document.getElementById('sp500-price').textContent = '—';
           document.getElementById('sp500-change').textContent = '오류';
         }
 
-        // QQQ (NASDAQ 100 대체)
+        // QQQ (NASDAQ 100 ETF)
         const ndxUrl = `https://finnhub.io/api/v1/quote?symbol=QQQ&token=${FINNHUB_KEY}`;
         try {
           const ndxRes = await fetch(proxy + encodeURIComponent(ndxUrl));
@@ -643,21 +642,46 @@
           } else {
             document.getElementById('ndx-price').textContent = '—';
             document.getElementById('ndx-change').textContent = '장마감/데이터 없음';
-            console.log('Finnhub QQQ 데이터 부족:', ndxData);
           }
         } catch (err) {
-          console.error('Finnhub QQQ fetch 오류:', err);
+          console.error('Finnhub QQQ 오류:', err);
           document.getElementById('ndx-price').textContent = '—';
           document.getElementById('ndx-change').textContent = '오류';
         }
 
+        // 8. 미국 주식 공포탐욕 지수 (CNN)
+        const cnnFngUrl = 'https://production.dataviz.cnn.io/index/fearandgreed/graphdata';
+        try {
+          const cnnRes = await fetch(proxy + encodeURIComponent(cnnFngUrl));
+          const cnnData = await cnnRes.json();
+
+          if (cnnData?.fear_and_greed?.score) {
+            const value = parseInt(cnnData.fear_and_greed.score, 10);
+            const cls = getKoreanClassification(value);
+            const rotation = value * 1.8 - 90;
+
+            document.getElementById('fng-value-us').textContent = value;
+            document.getElementById('fng-class-us').textContent = cls.text;
+            document.getElementById('fng-class-us').className = `text-xs text-center ${cls.color}`;
+            document.getElementById('fng-needle-us').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+          } else {
+            document.getElementById('fng-value-us').textContent = '—';
+            document.getElementById('fng-class-us').textContent = '데이터 없음';
+          }
+        } catch (err) {
+          console.error('CNN Fear & Greed 오류:', err);
+          document.getElementById('fng-value-us').textContent = '—';
+          document.getElementById('fng-class-us').textContent = '오류';
+        }
+
       } catch (err) {
-        console.error('데이터 업데이트 오류:', err);
+        console.error('전체 데이터 업데이트 오류:', err);
       }
     }
 
     updateAllData();
-    setInterval(updateAllData, 60 * 1000);  // 1분마다 갱신 (필요시 300000으로 늘려서 5분마다)
+    setInterval(updateAllData, 60000);  // 1분마다
+    // setInterval(updateAllData, 300000);  // 필요시 5분으로 변경 추천
   </script>
 
 </body>
