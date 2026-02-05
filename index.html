@@ -140,13 +140,6 @@
       color: var(--text-secondary);
     }
 
-    .card {
-      min-height: 120px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
     header {
       padding: 0.5rem 1rem;
     }
@@ -311,7 +304,7 @@
       <div class="max-w-7xl mx-auto">
         <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-5">
 
-          <!-- 원자재 섹션 (공포탐욕 지수 제거 또는 주석 처리) -->
+          <!-- 원자재 -->
           <section class="card p-5 space-y-3 flex flex-col">
             <h2 class="section-title">원자재</h2>
             <div class="flex-grow space-y-3 flex flex-col">
@@ -335,47 +328,50 @@
                   </div>
                 </div>
               </div>
-              <!-- 공포탐욕 지수는 크립토에만 표시하므로 여기서는 생략 -->
               <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
                 <div class="text-base font-semibold">공포 탐욕 지수</div>
-                <div class="mt-4 text-gray-500">크립토 섹션 참조</div>
+                <div class="mt-4 text-gray-500 text-sm">크립토 섹션 참조</div>
               </div>
             </div>
           </section>
 
-          <!-- 미국 주식 섹션 (공포탐욕 지수 제거 또는 주석 처리) -->
+          <!-- 미국 주식 -->
           <section class="card p-5 space-y-3 flex flex-col">
             <h2 class="section-title">미국 주식</h2>
             <div class="flex-grow space-y-3 flex flex-col">
               <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
                 <div class="text-base font-semibold">S&P 500</div>
                 <div class="mt-1">
-                  <div class="text-xl font-bold">5,842.01</div>
-                  <div class="text-xs negative flex justify-center items-center space-x-1">
-                    <i class="fas fa-arrow-trend-down"></i>
-                    <span>-0.38% (-22.31)</span>
-                  </div>
+                  <div class="text-xl font-bold" id="sp500-price">—</div>
+                  <div class="text-xs" id="sp500-change">—</div>
                 </div>
               </div>
               <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
                 <div class="text-base font-semibold">NASDAQ 100</div>
                 <div class="mt-1">
-                  <div class="text-xl font-bold">498.75</div>
-                  <div class="text-xs negative flex justify-center items-center space-x-1">
-                    <i class="fas fa-arrow-trend-down"></i>
-                    <span>-0.62% (-3.10)</span>
-                  </div>
+                  <div class="text-xl font-bold" id="ndx-price">—</div>
+                  <div class="text-xs" id="ndx-change">—</div>
                 </div>
               </div>
-              <!-- 공포탐욕 지수는 크립토에만 표시하므로 여기서는 생략 -->
-              <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
-                <div class="text-base font-semibold">공포 탐욕 지수</div>
-                <div class="mt-4 text-gray-500">크립토 섹션 참조</div>
+              <div class="card p-3">
+                <h3 class="text-base font-semibold text-center mb-1">공포 탐욕 지수</h3>
+                <div class="gauge-container">
+                  <div class="gauge-semi-circle"></div>
+                  <div class="gauge-mask"></div>
+                  <div class="gauge-needle" id="fng-needle-us" style="transform: translateX(-50%) rotate(0deg);"></div>
+                  <div class="gauge-center-point"></div>
+                  <div class="gauge-labels">
+                    <span>Extreme Fear</span>
+                    <span>Extreme Greed</span>
+                  </div>
+                </div>
+                <div class="text-center text-xl font-bold mt-1" id="fng-value-us">—</div>
+                <div class="text-xs text-center" id="fng-class-us">—</div>
               </div>
             </div>
           </section>
 
-          <!-- 한국 주식 섹션 (공포탐욕 지수 제거 또는 주석 처리) -->
+          <!-- 한국 주식 -->
           <section class="card p-5 space-y-3 flex flex-col">
             <h2 class="section-title">한국 주식</h2>
             <div class="flex-grow space-y-3 flex flex-col">
@@ -399,15 +395,14 @@
                   </div>
                 </div>
               </div>
-              <!-- 공포탐욕 지수는 크립토에만 표시하므로 여기서는 생략 -->
               <div class="card p-3 text-center flex flex-col justify-between min-h-[110px]">
                 <div class="text-base font-semibold">공포 탐욕 지수</div>
-                <div class="mt-4 text-gray-500">크립토 섹션 참조</div>
+                <div class="mt-4 text-gray-500 text-sm">크립토 섹션 참조</div>
               </div>
             </div>
           </section>
 
-          <!-- 크립토 섹션 -->
+          <!-- 크립토 -->
           <section class="card p-5 space-y-3 flex flex-col">
             <h2 class="section-title">크립토</h2>
             <div class="flex-grow space-y-3 flex flex-col">
@@ -490,7 +485,7 @@
       icon.classList.add('fa-sun');
     }
 
-    // 공포탐욕 지수 한글 매핑 함수
+    // 공포탐욕 지수 한글 매핑
     function getKoreanClassification(value) {
       value = parseInt(value, 10);
       if (isNaN(value)) return { text: '오류', color: 'text-gray-500' };
@@ -501,7 +496,7 @@
       return { text: '극단적 탐욕', color: 'text-emerald-500' };
     }
 
-    // 모든 데이터 업데이트 함수
+    // 모든 데이터 업데이트
     async function updateAllData() {
       try {
         // 1. CoinGecko - BTC + ETH
@@ -540,25 +535,19 @@
           ethChgEl.innerHTML = `<i class="fas fa-arrow-trend-${pos ? 'up' : 'down'}"></i><span>${pos ? '+' : ''}${chg}%</span>`;
         }
 
-        // 2. 환율 USD/KRW
-        let currentKrwRate = null;
+        // 2. 환율
         const fxRes = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.min.json');
         const fxData = await fxRes.json();
         if (fxData?.usd?.krw) {
-          currentKrwRate = fxData.usd.krw;
-          document.getElementById('usdkrw-value').textContent = `${currentKrwRate.toFixed(1)}원`;
-          document.getElementById('usdkrw-change').textContent = '실시간';
+          const krw = fxData.usd.krw.toFixed(1);
+          document.getElementById('usdkrw-value').textContent = `${krw}원`;
         }
 
-        // 3. 업비트 BTC-KRW + USDT
+        // 3. 업비트
         const upRes = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC,KRW-USDT');
         const upData = await upRes.json();
 
-        let upBtcKrw = 0;
-        let upUsdt = 0;
-        let upUsdtChgRate = 0;
-        let upUsdtChgWon = 0;
-
+        let upBtcKrw = 0, upUsdt = 0, upUsdtChgRate = 0, upUsdtChgWon = 0;
         upData.forEach(item => {
           if (item.market === 'KRW-BTC') upBtcKrw = item.trade_price;
           if (item.market === 'KRW-USDT') {
@@ -572,12 +561,12 @@
           const price = Math.round(upUsdt).toLocaleString('ko-KR');
           const pos = upUsdtChgRate >= 0;
           document.getElementById('upbit-usdt-value').textContent = `₩${price}`;
-          const upChgEl = document.getElementById('upbit-usdt-change');
-          upChgEl.textContent = `${pos ? '+' : ''}${upUsdtChgRate}% (${pos ? '+' : ''}${upUsdtChgWon.toLocaleString('ko-KR')}원)`;
-          upChgEl.className = `change ${pos ? 'positive' : 'negative'}`;
+          const el = document.getElementById('upbit-usdt-change');
+          el.textContent = `${pos ? '+' : ''}${upUsdtChgRate}% (${pos ? '+' : ''}${upUsdtChgWon.toLocaleString('ko-KR')}원)`;
+          el.className = `change ${pos ? 'positive' : 'negative'}`;
         }
 
-        // 4. 빗썸 USDT-KRW
+        // 4. 빗썸 USDT
         const bhRes = await fetch('https://api.bithumb.com/public/ticker/USDT_KRW');
         const bhData = await bhRes.json();
         if (bhData.status === '0000') {
@@ -585,60 +574,77 @@
           const chgRate = ((bhData.data.closing_price - bhData.data.opening_price) / bhData.data.opening_price * 100).toFixed(2);
           const chgWon = Math.round(bhData.data.closing_price - bhData.data.opening_price).toLocaleString('ko-KR');
           const pos = chgRate >= 0;
-
           document.getElementById('bithumb-usdt-value').textContent = `₩${price}`;
-          const bhChgEl = document.getElementById('bithumb-usdt-change');
-          bhChgEl.textContent = `${pos ? '+' : ''}${chgRate}% (${pos ? '+' : ''}${chgWon}원)`;
-          bhChgEl.className = `change ${pos ? 'positive' : 'negative'}`;
+          const el = document.getElementById('bithumb-usdt-change');
+          el.textContent = `${pos ? '+' : ''}${chgRate}% (${pos ? '+' : ''}${chgWon}원)`;
+          el.className = `change ${pos ? 'positive' : 'negative'}`;
         }
 
-        // 5. 김치프리미엄 (BTC 기준)
-        if (upBtcKrw && cgData.bitcoin && currentKrwRate) {
-          const globalBtcKrw = cgData.bitcoin.usd * currentKrwRate;
+        // 5. 김치프리미엄
+        if (upBtcKrw && cgData.bitcoin && fxData?.usd?.krw) {
+          const globalBtcKrw = cgData.bitcoin.usd * fxData.usd.krw;
           const premium = ((upBtcKrw / globalBtcKrw) - 1) * 100;
           const premiumStr = premium.toFixed(2);
           const pos = premium >= 0;
-
           const kimchiEl = document.getElementById('kimchi-premium');
           kimchiEl.textContent = `${pos ? '+' : ''}${premiumStr}%`;
           kimchiEl.className = `value ${pos ? 'positive' : 'negative'}`;
         }
 
-        // 6. Alternative.me 공포탐욕 지수 → 크립토 섹션에만 반영
+        // 6. 미국 주식 - Yahoo Finance (S&P 500, NASDAQ 100)
+        const yahooRes = await fetch('https://query1.finance.yahoo.com/v7/finance/quote?symbols=^GSPC,^NDX');
+        const yahooData = await yahooRes.json();
+        const quotes = yahooData.quoteResponse.result || [];
+
+        quotes.forEach(quote => {
+          if (quote.symbol === '^GSPC') {
+            const price = quote.regularMarketPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const change = quote.regularMarketChange.toFixed(2);
+            const changePct = quote.regularMarketChangePercent.toFixed(2);
+            const pos = change >= 0;
+
+            document.getElementById('sp500-price').textContent = price;
+            const spChgEl = document.getElementById('sp500-change');
+            spChgEl.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
+            spChgEl.className = `text-xs flex justify-center items-center space-x-1 ${pos ? 'positive' : 'negative'}`;
+          }
+
+          if (quote.symbol === '^NDX') {
+            const price = quote.regularMarketPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const change = quote.regularMarketChange.toFixed(2);
+            const changePct = quote.regularMarketChangePercent.toFixed(2);
+            const pos = change >= 0;
+
+            document.getElementById('ndx-price').textContent = price;
+            const ndxChgEl = document.getElementById('ndx-change');
+            ndxChgEl.innerHTML = `${pos ? '+' : ''}${changePct}% (${pos ? '+' : ''}${change})`;
+            ndxChgEl.className = `text-xs flex justify-center items-center space-x-1 ${pos ? 'positive' : 'negative'}`;
+          }
+        });
+
+        // 7. Alternative.me 공포탐욕 지수 → 크립토 섹션에 표시
         const fngRes = await fetch('https://api.alternative.me/fng/?limit=1');
-        if (!fngRes.ok) {
-          throw new Error(`Alternative.me API 오류: ${fngRes.status}`);
-        }
+        if (!fngRes.ok) throw new Error('FNG API 오류');
 
         const fngData = await fngRes.json();
 
         if (fngData?.data?.length > 0) {
-          const fng = fngData.data[0];
-          const value = parseInt(fng.value, 10);
+          const value = parseInt(fngData.data[0].value, 10);
           const cls = getKoreanClassification(value);
           const rotation = value * 1.8 - 90;
 
-          // 크립토 섹션에만 업데이트
           document.getElementById('fng-value-crypto').textContent = value;
           document.getElementById('fng-class-crypto').textContent = cls.text;
           document.getElementById('fng-class-crypto').className = `text-xs text-center ${cls.color}`;
           document.getElementById('fng-needle-crypto').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
-        } else {
-          document.getElementById('fng-value-crypto').textContent = '—';
-          document.getElementById('fng-class-crypto').textContent = '데이터 없음';
         }
 
       } catch (err) {
-        console.error('데이터 업데이트 오류:', err);
-        document.getElementById('fng-value-crypto').textContent = '오류';
-        document.getElementById('fng-class-crypto').textContent = '불러오기 실패';
+        console.error('업데이트 오류:', err);
       }
     }
 
-    // 페이지 로드 시 즉시 실행
     updateAllData();
-
-    // 1분마다 업데이트
     setInterval(updateAllData, 60 * 1000);
   </script>
 
