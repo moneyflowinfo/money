@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>자산 시장 대시보드</title>
+  <title>Money Flow 미국 주식</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
@@ -15,284 +15,236 @@
       --accent: #3b82f6;
       --positive: #10b981;
       --negative: #ef4444;
-      --card-bg: #1e293b;
+      --header-bg: rgba(15, 23, 42, 0.92); /* 다크 배경 기본 */
     }
 
     [data-theme="light"] {
-      --bg-primary: #f8fafc;
+      --bg-primary: #f9fafb;
       --bg-secondary: #ffffff;
-      --text-primary: #0f172a;
-      --text-secondary: #475569;
-      --card-bg: #ffffff;
+      --text-primary: #111827;
+      --text-secondary: #4b5563;
+      --accent: #2563eb;
+      --positive: #047857;
+      --negative: #b91c1c;
+      --header-bg: rgba(30, 41, 59, 0.92); /* 라이트 모드에서도 헤더는 다크하게 유지 */
     }
 
-    body {
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      font-family: 'Pretendard', system-ui, sans-serif;
-      min-height: 100vh;
+    body { background: var(--bg-primary); color: var(--text-primary); font-family: system-ui, sans-serif; margin: 0; min-height: 100vh; }
+    header {
+      background: var(--header-bg);
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid #334155;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 0.75rem 1.5rem;
     }
-
-    .sidebar {
-      background: var(--bg-secondary);
-      border-right: 1px solid #334155;
+    .header-container {
+      max-width: 1680px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
     }
-
-    [data-theme="light"] .sidebar {
-      border-right: 1px solid #e2e8f0;
+    .title-section { text-align: center; flex: 1; }
+    h1, .subtitle, .usd-info, #last-updated {
+      color: #ffffff !important; /* 헤더 텍스트 항상 흰색으로 강제 (라이트 모드에서도 보이게) */
     }
-
-    .card {
-      background: var(--card-bg);
-      border: 1px solid #334155;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    h1 { font-size: 1.8rem; margin: 0; }
+    .subtitle { font-size: 0.875rem; margin-top: 0.25rem; }
+    .right-section {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
     }
-
-    [data-theme="light"] .card {
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-    }
-
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
-    }
-
-    .section-title {
-      position: relative;
-      display: block;
-      font-size: 1.5rem;
-      font-weight: bold;
-      margin-bottom: 1rem;
-      padding-bottom: 0.375rem;
-      text-align: center;
-    }
-
-    .section-title::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60%;
-      height: 2px;
-      background: linear-gradient(to right, #3b82f6, #60a5fa);
-      border-radius: 2px;
-    }
-
+    .usd-info { font-size: 0.875rem; white-space: nowrap; }
+    .usd-info strong { font-weight: 600; }
+    main { max-width: 1680px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+    .tables-wrapper { display: flex; flex-direction: column; gap: 3rem; }
+    @media (min-width: 1024px) { .tables-wrapper { flex-direction: row; gap: 2rem; } .table-section { flex: 1; min-width: 0; } }
+    .section-title { font-size: 1.4rem; font-weight: bold; text-align: center; margin: 0 0 1rem; position: relative; }
+    .section-title::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 120px; height: 3px; background: linear-gradient(to right, var(--accent), #60a5fa); border-radius: 2px; }
+    .table-container { overflow-x: auto; background: var(--bg-secondary); border: 1px solid #334155; border-radius: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.80rem; table-layout: auto; }
+    th, td { padding: 0.65rem 0.9rem; text-align: left; white-space: nowrap; border-bottom: 1px solid #2d3748; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+    th { background: var(--bg-primary); color: var(--text-secondary); font-weight: 600; position: sticky; top: 0; z-index: 10; }
+    tr:hover { background: rgba(59, 130, 246, 0.08); }
     .positive { color: var(--positive); }
     .negative { color: var(--negative); }
 
-    .gauge-container {
-      position: relative;
-      width: 100%;
-      height: 100px;
-      overflow: hidden;
-    }
-    .gauge-semi-circle {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 200px;
-      border-radius: 50% 50% 50% 50% / 100% 100% 0% 0%;
-      background: linear-gradient(to right, #ef4444, #f59e0b, #10b981);
-    }
-    .gauge-mask {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      width: calc(100% - 20px);
-      height: 180px;
-      background: var(--card-bg);
-      border-radius: 50% 50% 50% 50% / 100% 100% 0% 0%;
-    }
-    .gauge-needle {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      width: 2px;
-      height: 45%;
-      background: var(--text-primary);
-      transform-origin: bottom center;
-      transition: transform 0.5s ease-in-out;
-    }
-    .gauge-center-point {
-      position: absolute;
-      bottom: -4px;
-      left: 50%;
-      width: 8px;
-      height: 8px;
-      background: var(--text-primary);
-      border-radius: 50%;
-      transform: translateX(-50%);
-    }
-    .gauge-labels {
-      display: flex;
-      justify-content: space-between;
-      position: absolute;
-      bottom: 6px;
-      width: 100%;
-      padding: 0 8px;
-      font-size: 9px;
-      color: var(--text-secondary);
-    }
-
-    header {
-      padding: 0.5rem 1rem;
-    }
-
-    .header-container {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: nowrap;
-      gap: 1rem;
-      max-height: 64px;
-      height: 64px;
-      overflow: hidden;
-    }
-
-    .header-left h1 {
-      font-size: 1.75rem;
-      margin: 0;
-      line-height: 1.15;
-    }
-
-    .header-left p {
-      font-size: 0.8rem;
-      margin: 0.25rem 0 0;
-      line-height: 1.1;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex-wrap: nowrap;
-      height: 100%;
-      overflow: hidden;
-    }
-
-    .indicator-card {
-      padding: 0.35rem 0.6rem;
-      min-width: 95px;
-      max-height: 54px;
-      font-size: 0.82rem;
-      line-height: 1.15;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      overflow: hidden;
-      text-align: center;
-      white-space: nowrap;
-    }
-
-    @media (max-width: 1024px) {
-      .header-container {
-        flex-wrap: wrap;
-        gap: 0.6rem;
-        height: auto;
-        max-height: none;
-      }
-      .header-right {
-        flex-wrap: wrap;
-        gap: 0.4rem;
-      }
-      .indicator-card {
-        min-width: 85px;
-        padding: 0.3rem 0.55rem;
-      }
-    }
+    .filter-bar { background: var(--bg-secondary); padding: 0.75rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #334155; overflow-x: auto; }
+    .filter-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: nowrap; }
+    .filter-item { display: flex; flex-direction: column; min-width: 120px; }
+    .filter-item label { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+    .filter-item input, .filter-item select { background: var(--bg-primary); color: var(--text-primary); border: 1px solid #334155; border-radius: 5px; padding: 0.4rem 0.6rem; font-size: 0.85rem; }
+    .filter-item input::placeholder { color: #64748b; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body>
 
-  <!-- 상단 헤더 -->
-  <header class="bg-gray-900/80 backdrop-blur-md border-b border-gray-800 sticky top-0 z-50">
-    <div class="header-container max-w-7xl mx-auto">
-      <div class="header-left">
-        <h1 style="color: var(--text-primary);">Money Flow 자산 흐름</h1>
-        <p style="color: var(--text-secondary);">
-          주요 자산 가격 현황 및 지표
-          <span class="ml-2 px-1.5 py-0.5 rounded text-xs bg-[var(--bg-secondary)]">Updated: 실시간</span>
-        </p>
+  <header>
+    <div class="header-container">
+      <div class="title-section">
+        <h1>Money Flow 미국 주식</h1>
+        <div class="subtitle">이동 평균선으로 보는 돈의 흐름</div>
       </div>
-
-      <div class="header-right">
-        <div class="card indicator-card hidden md:block">
-          <div class="label">$ 원/달러 환율</div>
-          <div class="value" id="usdkrw-value">—</div>
-          <div class="change" id="usdkrw-change">실시간</div>
+      <div class="right-section">
+        <div class="usd-info">
+          $ 원/달러 환율: <strong id="usdkrw-value">—</strong>
+          <span id="last-updated" style="margin-left: 1rem;">Updated: 로딩 중...</span>
         </div>
-        <div class="card indicator-card hidden md:block">
-          <div class="label">업비트 USDT</div>
-          <div class="value" id="upbit-usdt-value">—</div>
-          <div class="change" id="upbit-usdt-change">—</div>
-        </div>
-        <div class="card indicator-card hidden md:block">
-          <div class="label">빗썸 USDT</div>
-          <div class="value" id="bithumb-usdt-value">—</div>
-          <div class="change" id="bithumb-usdt-change">—</div>
-        </div>
-        <div class="card indicator-card hidden md:block">
-          <div class="label">김치프리미엄 (BTC)</div>
-          <div class="value" id="kimchi-premium">—</div>
-        </div>
-        <button id="theme-toggle" class="p-2 rounded-lg hover:bg-gray-800 transition">
+        <button id="theme-toggle" class="p-2 rounded hover:bg-gray-800">
           <i id="theme-icon" class="fas fa-moon text-lg"></i>
         </button>
       </div>
     </div>
   </header>
 
-  <div class="flex flex-1 overflow-hidden">
+  <main>
+    <div class="tables-wrapper">
 
-    <!-- 좌측 사이드바 -->
-    <aside class="sidebar w-64 flex-shrink-0 hidden md:block overflow-y-auto">
-      <nav class="py-4 px-3 space-y-1">
-        <a href="#" class="flex items-center px-3 py-2 rounded-lg bg-blue-600/20 text-blue-400">
-          <i class="fas fa-home mr-2"></i> 대시보드
-        </a>
-        <a href="#commodities" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-800 transition">
-          <i class="fas fa-coins mr-2"></i> 원자재
-        </a>
-        <a href="#us-stocks" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-800 transition">
-          <i class="fas fa-chart-line mr-2"></i> 미국 주식
-        </a>
-        <a href="#korean-stocks" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-800 transition">
-          <i class="fas fa-building mr-2"></i> 한국 주식
-        </a>
-        <a href="#crypto" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-800 transition">
-          <i class="fab fa-bitcoin mr-2"></i> 크립토
-        </a>
-      </nav>
-    </aside>
+      <div class="table-section">
+        <h2 class="section-title">✅ 완벽 정배열</h2>
 
-    <!-- 메인 콘텐츠 -->
-    <main class="flex-1 overflow-y-auto p-4 md:p-5">
-      <div class="max-w-7xl mx-auto">
-        <div class="card p-5">
-          <h2 class="section-title">시장 데이터 분석</h2>
-          <div id="csv-container" class="overflow-x-auto">
-            <p id="loading-message" class="text-center text-lg py-10">데이터를 불러오는 중입니다...</p>
-            <table id="csv-table" class="min-w-full divide-y divide-gray-700 hidden">
-              <thead class="bg-gray-800/50">
-                <!-- Headers will be inserted by JavaScript -->
-              </thead>
-              <tbody class="divide-y divide-gray-800">
-                <!-- Rows will be inserted by JavaScript -->
-              </tbody>
-            </table>
+        <div class="filter-bar">
+          <div class="filter-row">
+            <div class="filter-item">
+              <label>티커</label>
+              <input type="text" id="perfect-ticker" placeholder="부분 입력" />
+            </div>
+            <div class="filter-item">
+              <label>현재가</label>
+              <select id="perfect-price">
+                <option value="">전체</option>
+                <option value="< $100">< $100</option>
+                <option value="$100~200">$100~200</option>
+                <option value="$200~300">$200~300</option>
+                <option value="$300~500">$300~500</option>
+                <option value="$500+">$500+</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <label>상태/돌파</label>
+              <select id="perfect-status">
+                <option value="">전체</option>
+                <option value="정배열 / 신규진입">정배열 / 신규진입</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <label>RSI(일)</label>
+              <select id="perfect-rsi-day">
+                <option value="">전체</option>
+                <option value="70↑">70↑</option>
+                <option value="60~70">60~70</option>
+                <option value="50~60">50~60</option>
+                <option value="40~50">40~50</option>
+                <option value="30↓">30↓</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <label>RSI(주)</label>
+              <select id="perfect-rsi-week">
+                <option value="">전체</option>
+                <option value="70↑">70↑</option>
+                <option value="60~70">60~70</option>
+                <option value="50~60">50~60</option>
+                <option value="40~50">40~50</option>
+                <option value="30↓">30↓</option>
+              </select>
+            </div>
+            <div class="filter-item" data-type="sector">
+              <label>섹터</label>
+              <select id="perfect-sector">
+                <option value="">전체</option>
+              </select>
+            </div>
           </div>
         </div>
-      </div>
-    </main>
-  </div>
 
-  <!-- 스크립트 -->
+        <div class="table-container">
+          <p id="perfect-loading" class="text-center py-12 text-lg">데이터 로드 중...</p>
+          <table id="perfect-table" class="hidden">
+            <thead><tr></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="table-section">
+        <h2 class="section-title">🚀 상승 돌파 시도중</h2>
+
+        <div class="filter-bar">
+          <div class="filter-row">
+            <div class="filter-item">
+              <label>티커</label>
+              <input type="text" id="breakout-ticker" placeholder="부분 입력" />
+            </div>
+            <div class="filter-item">
+              <label>현재가</label>
+              <select id="breakout-price">
+                <option value="">전체</option>
+                <option value="< $100">< $100</option>
+                <option value="$100~200">$100~200</option>
+                <option value="$200~300">$200~300</option>
+                <option value="$300~500">$300~500</option>
+                <option value="$500+">$500+</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <label>상태/돌파</label>
+              <select id="breakout-status">
+                <option value="">전체</option>
+                <option value="200일선 돌파">200일선 돌파</option>
+                <option value="60일선 돌파">60일선 돌파</option>
+                <option value="근처 반등">근처 반등</option>
+                <option value="강한 돌파">강한 돌파</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <label>RSI(일)</label>
+              <select id="breakout-rsi-day">
+                <option value="">전체</option>
+                <option value="70↑">70↑</option>
+                <option value="60~70">60~70</option>
+                <option value="50~60">50~60</option>
+                <option value="40~50">40~50</option>
+                <option value="30↓">30↓</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <label>RSI(주)</label>
+              <select id="breakout-rsi-week">
+                <option value="">전체</option>
+                <option value="70↑">70↑</option>
+                <option value="60~70">60~70</option>
+                <option value="50~60">50~60</option>
+                <option value="40~50">40~50</option>
+                <option value="30↓">30↓</option>
+              </select>
+            </div>
+            <div class="filter-item" data-type="sector">
+              <label>섹터</label>
+              <select id="breakout-sector">
+                <option value="">전체</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <p id="breakout-loading" class="text-center py-12 text-lg">데이터 로드 중...</p>
+          <table id="breakout-table" class="hidden">
+            <thead><tr></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
   <script>
     // 테마 토글
     const toggleBtn = document.getElementById('theme-toggle');
@@ -302,80 +254,238 @@
     toggleBtn.addEventListener('click', () => {
       if (html.getAttribute('data-theme') === 'dark') {
         html.setAttribute('data-theme', 'light');
-        icon.classList.remove('fa-moon');
-        icon.classList.add('fa-sun');
+        icon.classList.replace('fa-moon', 'fa-sun');
       } else {
         html.setAttribute('data-theme', 'dark');
-        icon.classList.remove('fa-sun');
-        icon.classList.add('fa-moon');
+        icon.classList.replace('fa-sun', 'fa-moon');
       }
     });
 
-    if (html.getAttribute('data-theme') === 'light') {
-      icon.classList.remove('fa-moon');
-      icon.classList.add('fa-sun');
-    }
-
-    // CSV 데이터 로드 및 테이블 생성
-    async function loadCsvData() {
+    // 헤더 정보 업데이트 (환율 + CSV 수정 시간)
+    async function updateHeaderInfo() {
       const csvUrl = 'https://raw.githubusercontent.com/moneyflowinfo/moneynew/master/market_data_analysis.csv';
-      const table = document.getElementById('csv-table');
-      const loadingMessage = document.getElementById('loading-message');
 
       try {
-        const response = await fetch(csvUrl);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        const csvRes = await fetch(csvUrl, { method: 'HEAD' });
+        const lastModified = csvRes.headers.get('last-modified');
+        let updatedText = '알 수 없음';
+        if (lastModified) {
+          const date = new Date(lastModified);
+          updatedText = date.toLocaleString('ko-KR', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', hour12: false
+          });
         }
-        const data = await response.text();
-        
-        const rows = data.trim().split('\n').map(row => row.split(','));
+        document.getElementById('last-updated').textContent = `Updated: ${updatedText}`;
 
-        if (rows.length < 2) { // 헤더와 최소 1개의 데이터 행이 있는지 확인
-            loadingMessage.textContent = '표시할 데이터가 없습니다.';
-            return;
+        const rateRes = await fetch('https://open.er-api.com/v6/latest/USD');
+        const rateData = await rateRes.json();
+        if (rateData.result === 'success' && rateData.rates?.KRW) {
+          const krw = rateData.rates.KRW.toFixed(2);
+          document.getElementById('usdkrw-value').textContent = `${krw}원`;
+        } else {
+          document.getElementById('usdkrw-value').textContent = '확인 중...';
         }
-
-        const headers = rows.shift();
-        
-        // 테이블 헤더 생성
-        const thead = table.querySelector('thead');
-        thead.innerHTML = ''; // 기존 헤더 초기화
-        const headerRow = document.createElement('tr');
-        headers.forEach(headerText => {
-            const th = document.createElement('th');
-            th.textContent = headerText.trim();
-            th.className = 'px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider';
-            headerRow.appendChild(th);
-        });
-        thead.appendChild(headerRow);
-
-        // 테이블 바디 생성
-        const tbody = table.querySelector('tbody');
-        tbody.innerHTML = ''; // 기존 데이터 초기화
-        rows.forEach(rowData => {
-            const row = document.createElement('tr');
-            row.className = 'hover:bg-gray-700/50 transition-colors duration-150';
-            rowData.forEach(cellData => {
-                const td = document.createElement('td');
-                td.textContent = cellData.trim();
-                td.className = 'px-4 py-4 whitespace-nowrap text-sm';
-                row.appendChild(td);
-            });
-            tbody.appendChild(row);
-        });
-        
-        loadingMessage.style.display = 'none';
-        table.classList.remove('hidden');
-
-      } catch (error) {
-        console.error('CSV 데이터 로드 실패:', error);
-        loadingMessage.textContent = '데이터를 불러오는 데 실패했습니다.';
-        loadingMessage.style.color = 'var(--negative)';
+      } catch (e) {
+        console.error(e);
+        document.getElementById('last-updated').textContent = '오류';
+        document.getElementById('usdkrw-value').textContent = '오류';
       }
     }
 
-    document.addEventListener('DOMContentLoaded', loadCsvData);
+    function applyTableFilters(tableId) {
+      const prefix = tableId.replace('-table', '');
+      const tickerValue = document.getElementById(prefix + '-ticker')?.value.trim().toLowerCase() || '';
+      const priceValue = document.getElementById(prefix + '-price')?.value || '';
+      const statusValue = document.getElementById(prefix + '-status')?.value || '';
+      const rsiDayValue = document.getElementById(prefix + '-rsi-day')?.value || '';
+      const rsiWeekValue = document.getElementById(prefix + '-rsi-week')?.value || '';
+      const sectorValue = document.getElementById(prefix + '-sector')?.value || '';
+
+      const table = document.getElementById(tableId);
+      const rows = table.querySelectorAll('tbody tr');
+
+      rows.forEach(row => {
+        let show = true;
+
+        if (tickerValue && row.children[0]) {
+          if (!row.children[0].textContent.trim().toLowerCase().includes(tickerValue)) show = false;
+        }
+
+        if (priceValue && show && row.children[1]) {
+          const p = parseFloat(row.children[1].textContent.trim().replace(/[\$,]/g, ''));
+          if (!isNaN(p)) {
+            if (priceValue === '< $100' && p >= 100) show = false;
+            else if (priceValue === '$100~200' && (p < 100 || p >= 200)) show = false;
+            else if (priceValue === '$200~300' && (p < 200 || p >= 300)) show = false;
+            else if (priceValue === '$300~500' && (p < 300 || p >= 500)) show = false;
+            else if (priceValue === '$500+' && p < 500) show = false;
+          } else {
+            show = false;
+          }
+        }
+
+        if (statusValue && show && row.children[3]) {
+          if (row.children[3].textContent.trim() !== statusValue) show = false;
+        }
+
+        if (rsiDayValue && show && row.children[4]) {
+          const v = parseFloat(row.children[4].textContent.trim());
+          if (!isNaN(v)) {
+            if (rsiDayValue === '70↑' && v < 70) show = false;
+            else if (rsiDayValue === '60~70' && (v < 60 || v >= 70)) show = false;
+            else if (rsiDayValue === '50~60' && (v < 50 || v >= 60)) show = false;
+            else if (rsiDayValue === '40~50' && (v < 40 || v >= 50)) show = false;
+            else if (rsiDayValue === '30↓' && v > 30) show = false;
+          }
+        }
+
+        if (rsiWeekValue && show && row.children[5]) {
+          const v = parseFloat(row.children[5].textContent.trim());
+          if (!isNaN(v)) {
+            if (rsiWeekValue === '70↑' && v < 70) show = false;
+            else if (rsiWeekValue === '60~70' && (v < 60 || v >= 70)) show = false;
+            else if (rsiWeekValue === '50~60' && (v < 50 || v >= 60)) show = false;
+            else if (rsiWeekValue === '40~50' && (v < 40 || v >= 50)) show = false;
+            else if (rsiWeekValue === '30↓' && v > 30) show = false;
+          }
+        }
+
+        if (sectorValue && show && row.children[7]) {
+          if (row.children[7].textContent.trim() !== sectorValue) show = false;
+        }
+
+        row.style.display = show ? '' : 'none';
+      });
+    }
+
+    function populateTable(tableId, loadingId, headers, data) {
+      const table = document.getElementById(tableId);
+      const loading = document.getElementById(loadingId);
+
+      if (!data || data.length === 0) {
+        loading.textContent = '표시할 데이터가 없습니다.';
+        return;
+      }
+
+      const thead = table.querySelector('thead tr');
+      thead.innerHTML = '';
+      headers.slice(1, -1).forEach(header => {
+        const th = document.createElement('th');
+        th.textContent = header.trim();
+        thead.appendChild(th);
+      });
+
+      const tbody = table.querySelector('tbody');
+      tbody.innerHTML = '';
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        row.slice(1, -1).forEach(cell => {
+          const td = document.createElement('td');
+          td.textContent = cell.trim();
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+
+      const sectorSelect = document.getElementById(tableId.replace('table', 'sector'));
+      if (sectorSelect) {
+        const sectors = new Set();
+        data.forEach(row => {
+          const sector = row[8]?.trim();
+          if (sector) sectors.add(sector);
+        });
+        sectors.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s;
+          opt.textContent = s;
+          sectorSelect.appendChild(opt);
+        });
+      }
+
+      loading.style.display = 'none';
+      table.classList.remove('hidden');
+
+      // 테이블 로드 후 필터 즉시 적용 (이 부분이 핵심!)
+      applyTableFilters(tableId);
+    }
+
+    async function loadCsvData() {
+      const url = 'https://raw.githubusercontent.com/moneyflowinfo/moneynew/master/market_data_analysis.csv';
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('CSV 로드 실패');
+        const text = await res.text();
+        const rows = text.trim().split('\n').map(r => r.split(','));
+        const headers = rows.shift();
+        const signalIdx = headers.length - 1;
+
+        const perfect = rows.filter(r => r[signalIdx]?.trim() === '완벽 정배열');
+        const breakout = rows.filter(r => r[signalIdx]?.trim() === '상승 돌파 시도중');
+
+        populateTable('perfect-table', 'perfect-loading', headers, perfect);
+        populateTable('breakout-table', 'breakout-loading', headers, breakout);
+
+        updateHeaderInfo();
+      } catch (e) {
+        console.error(e);
+        document.getElementById('perfect-loading').textContent = '데이터 로드 실패';
+        document.getElementById('breakout-loading').textContent = '데이터 로드 실패';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCsvData();
+
+      ['perfect', 'breakout'].forEach(prefix => {
+        const elements = [
+          document.getElementById(prefix + '-ticker'),
+          document.getElementById(prefix + '-price'),
+          document.getElementById(prefix + '-status'),
+          document.getElementById(prefix + '-rsi-day'),
+          document.getElementById(prefix + '-rsi-week'),
+          document.getElementById(prefix + '-sector')
+        ];
+
+        elements.forEach(el => {
+          if (el) {
+            const eventType = el.tagName === 'INPUT' ? 'input' : 'change';
+            el.addEventListener(eventType, () => applyTableFilters(prefix + '-table'));
+          }
+        });
+      });
+    });
+
+    async function updateHeaderInfo() {
+      const csvUrl = 'https://raw.githubusercontent.com/moneyflowinfo/moneynew/master/market_data_analysis.csv';
+
+      try {
+        const csvRes = await fetch(csvUrl, { method: 'HEAD' });
+        const lastModified = csvRes.headers.get('last-modified');
+        let updatedText = '알 수 없음';
+        if (lastModified) {
+          const date = new Date(lastModified);
+          updatedText = date.toLocaleString('ko-KR', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', hour12: false
+          });
+        }
+        document.getElementById('last-updated').textContent = `Updated: ${updatedText}`;
+
+        const rateRes = await fetch('https://open.er-api.com/v6/latest/USD');
+        const rateData = await rateRes.json();
+        if (rateData.result === 'success' && rateData.rates?.KRW) {
+          const krw = rateData.rates.KRW.toFixed(2);
+          document.getElementById('usdkrw-value').textContent = `${krw}원`;
+        } else {
+          document.getElementById('usdkrw-value').textContent = '확인 중...';
+        }
+      } catch (e) {
+        console.error(e);
+        document.getElementById('last-updated').textContent = '오류';
+        document.getElementById('usdkrw-value').textContent = '오류';
+      }
+    }
   </script>
 
 </body>
