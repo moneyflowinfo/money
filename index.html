@@ -416,44 +416,21 @@
         const res = await fetch(url);
         if (!res.ok) throw new Error('CSV 로드 실패');
         const text = await res.text();
-        const rawRows = text.trim().split('\n');
-
-        let rows = rawRows;
-        let lastUpdatedTimestamp = '알 수 없음';
-
-        // Check for timestamp comment in the first line
-        if (rawRows.length > 0 && rawRows[0].startsWith('# Last Updated: ')) {
-          lastUpdatedTimestamp = rawRows[0].replace('# Last Updated: ', '').trim();
-          rows = rawRows.slice(1); // Remove the comment line from data rows
-        }
-
+        const rows = text.trim().split('\n').map(r => r.split(','));
         const headers = rows.shift();
         const signalIdx = headers.length - 1;
 
-        const perfect = rows.filter(r => r[signalIdx]?.trim() === '완벽 정배열').map(r => r.split(','));
-        const breakout = rows.filter(r => r[signalIdx]?.trim() === '상승 돌파 시도중').map(r => r.split(','));
+        const perfect = rows.filter(r => r[signalIdx]?.trim() === '완벽 정배열');
+        const breakout = rows.filter(r => r[signalIdx]?.trim() === '상승 돌파 시도중');
 
         populateTable('perfect-table', 'perfect-loading', headers, perfect);
         populateTable('breakout-table', 'breakout-loading', headers, breakout);
 
-        // Update the last updated time directly from CSV
-        if (lastUpdatedTimestamp !== '알 수 없음') {
-          const date = new Date(lastUpdatedTimestamp);
-          const formattedDate = date.toLocaleString('ko-KR', {
-            year: 'numeric', month: '2-digit', day: '2-digit',
-            hour: '2-digit', minute: '2-digit', hour12: false
-          });
-          document.getElementById('last-updated').textContent = `Updated: ${formattedDate}`;
-        } else {
-          document.getElementById('last-updated').textContent = `Updated: 알 수 없음 (타임스탬프 없음)`;
-        }
-
-        updateHeaderInfo(); // Now only fetches USD/KRW rate
+        updateHeaderInfo(res); // Pass the response object
       } catch (e) {
         console.error(e);
         document.getElementById('perfect-loading').textContent = '데이터 로드 실패';
         document.getElementById('breakout-loading').textContent = '데이터 로드 실패';
-        document.getElementById('last-updated').textContent = 'Updated: 오류';
       }
     }
 
@@ -479,8 +456,24 @@
       });
     });
 
-    async function updateHeaderInfo() { // No longer accepts csvResponse
+    async function updateHeaderInfo(csvResponse) { // Accept Response object
       try {
+        const lastModified = csvResponse.headers.get('last-modified');
+        console.log('Last-Modified header:', lastModified); // Debug log
+        let updatedText = '알 수 없음';
+        if (lastModified) {
+          const date = new Date(lastModified);
+          console.log('Parsed Date object:', date); // Debug log
+          if (!isNaN(date.getTime())) { // Check if date is valid
+            updatedText = date.toLocaleString('ko-KR', {
+              year: 'numeric', month: '2-digit', day: '2-digit',
+              hour: '2-digit', minute: '2-digit', hour12: false
+            });
+          }
+        }
+        console.log('Final updatedText:', updatedText); // Debug log
+        document.getElementById('last-updated').textContent = `Updated: ${updatedText}`;
+
         const rateRes = await fetch('https://open.er-api.com/v6/latest/USD');
         const rateData = await rateRes.json();
         if (rateData.result === 'success' && rateData.rates?.KRW) {
@@ -491,6 +484,7 @@
         }
       } catch (e) {
         console.error(e);
+        document.getElementById('last-updated').textContent = '오류';
         document.getElementById('usdkrw-value').textContent = '오류';
       }
     }
