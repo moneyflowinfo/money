@@ -92,7 +92,7 @@
       </div>
       <div class="right-section">
         <div class="usd-info">
-          $ 원/달러 환율: <strong id="usdkrw-value">—</strong>
+          원/달러 환율: <strong id="usdkrw-value">—</strong>
           <span id="last-updated" style="margin-left: 1rem;">Updated: 로딩 중...</span>
         </div>
         <button id="theme-toggle" class="p-2 rounded hover:bg-gray-800">
@@ -426,7 +426,7 @@
         populateTable('perfect-table', 'perfect-loading', headers, perfect);
         populateTable('breakout-table', 'breakout-loading', headers, breakout);
 
-        updateHeaderInfo();
+        updateHeaderInfo(res); // Pass the response object
       } catch (e) {
         console.error(e);
         document.getElementById('perfect-loading').textContent = '데이터 로드 실패';
@@ -456,12 +456,9 @@
       });
     });
 
-    async function updateHeaderInfo() {
-      const csvUrl = 'https://raw.githubusercontent.com/moneyflowinfo/moneynew/master/market_data_analysis.csv';
-
+    async function updateHeaderInfo(csvResponse) { // Accept Response object
       try {
-        const csvRes = await fetch(csvUrl, { method: 'HEAD' });
-        const lastModified = csvRes.headers.get('last-modified');
+        const lastModified = csvResponse.headers.get('last-modified');
         let updatedText = '알 수 없음';
         if (lastModified) {
           const date = new Date(lastModified);
